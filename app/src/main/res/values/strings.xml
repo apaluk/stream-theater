@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Stream Theater</string>
+
+    <string name="st_yes">Yes</string>
+    <string name="st_no">No</string>
+
+    <string name="st_login_username">User name</string>
+    <string name="st_login_password">Password</string>
+    <string name="st_login_positive_button">Login</string>
+    <string name="st_login_welcome">Welcome!</string>
+    <string name="st_login_instructions">Please log in with your VIP webshare.cz account.</string>
+
+    <string name="st_default_empty_state">No data.</string>
+    <string name="st_default_error_state">Something went wrong</string>
+
+    <string name="st_search_button">Search</string>
+    <string name="st_search_hint">Search for movies, TV shows, actors…</string>
+    <string name="st_search_empty_results">No results found</string>
+
+    <string name="st_media_play">Play</string>
+    <string name="st_media_director">Director</string>
+    <string name="st_media_cast">Cast</string>
+    <string name="st_media_writer">Writer</string>
+    <string name="st_media_select_stream">Select stream</string>
+    <string name="st_tv_show_count_of_seasons">%d Seasons</string>
+    <string name="st_tv_show_season_number">Season %d</string>
+    <string name="st_tv_show_episode_number">Episode %d</string>
+    <string name="st_media_error_no_seasons_or_episodes">Could not get seasons nor episodes for this TV show.</string>
+    <string name="st_media_error_no_episodes">Could not get episodes for this TV show.</string>
+
+    <string name="st_dashboard_continue_watching">Continue watching</string>
+    <string name="st_dashboard_remove_media_from_history">Remove from history?</string>
+
+</resources>
