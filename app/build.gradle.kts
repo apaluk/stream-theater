@@ -4,6 +4,7 @@ plugins {
     kotlin("kapt")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
+    id("com.google.firebase.crashlytics")
     id("com.google.gms.google-services")
 }
 
@@ -92,6 +93,7 @@ dependencies {
 
     implementation(platform(Dependencies.Firebase.bom))
     implementation(Dependencies.Firebase.analytics)
+    implementation(Dependencies.Firebase.crashlytics)
 
     testImplementation(Dependencies.Test.jUnit)
     testImplementation(Dependencies.Test.mockk)

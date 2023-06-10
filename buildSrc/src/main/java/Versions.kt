@@ -32,4 +32,5 @@ object Versions {
     const val room = "2.5.0"
     const val googleServices = "4.3.15"
     const val firebase = "32.1.0"
+    const val firebaseCrashlyticsGradle = "2.9.5"
 }

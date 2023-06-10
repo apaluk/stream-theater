@@ -74,5 +74,7 @@ object Dependencies {
     object Firebase {
         const val bom = "com.google.firebase:firebase-bom:${Versions.firebase}"
         const val analytics = "com.google.firebase:firebase-analytics-ktx"
+        const val crashlytics = "com.google.firebase:firebase-crashlytics-ktx"
+        const val crashlyticsGradle = "com.google.firebase:firebase-crashlytics-gradle:${Versions.firebaseCrashlyticsGradle}"
     }
 }

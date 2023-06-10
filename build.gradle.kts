@@ -3,6 +3,7 @@ buildscript {
     dependencies {
         classpath(Dependencies.Hilt.gradlePlugin)
         classpath(Dependencies.googleServices)
+        classpath(Dependencies.Firebase.crashlyticsGradle)
     }
 
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
