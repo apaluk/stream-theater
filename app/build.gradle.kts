@@ -4,6 +4,7 @@ plugins {
     kotlin("kapt")
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -88,6 +89,9 @@ dependencies {
     implementation(Dependencies.Room.runtime)
     annotationProcessor(Dependencies.Room.kotlinCompiler)
     implementation(Dependencies.Room.ktx)
+
+    implementation(platform(Dependencies.Firebase.bom))
+    implementation(Dependencies.Firebase.analytics)
 
     testImplementation(Dependencies.Test.jUnit)
     testImplementation(Dependencies.Test.mockk)

@@ -69,4 +69,10 @@ object Dependencies {
     const val datastore = "androidx.datastore:datastore-preferences:${Versions.datastore}"
     const val coil = "io.coil-kt:coil-compose:${Versions.coil}"
     const val accompanist = "com.google.accompanist:accompanist-systemuicontroller:${Versions.accompanist}"
+    const val googleServices = "com.google.gms:google-services:${Versions.googleServices}"
+
+    object Firebase {
+        const val bom = "com.google.firebase:firebase-bom:${Versions.firebase}"
+        const val analytics = "com.google.firebase:firebase-analytics-ktx"
+    }
 }

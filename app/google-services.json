@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "156057893918",
+    "project_id": "stream-theater",
+    "storage_bucket": "stream-theater.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:156057893918:android:097133ee65eae340d2020f",
+        "android_client_info": {
+          "package_name": "com.apaluk.streamtheater"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "156057893918-rhq2vun5qe0llh6j3mh8r6rghrcu35g3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRBYU6nbmKhB2Eb9X-Bp3YkDpjdXLRVoQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "156057893918-rhq2vun5qe0llh6j3mh8r6rghrcu35g3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
