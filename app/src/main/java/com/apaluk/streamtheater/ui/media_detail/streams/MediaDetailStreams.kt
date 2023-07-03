@@ -69,8 +69,8 @@ fun MediaDetailStreams(
         }
     }
     LaunchedEffect(streamsUiState.selectedIndex) {
-        streamsUiState.selectedIndex?.let {
-            listState.scrollToItem(it)
+        streamsUiState.selectedIndex?.let { index ->
+            if(index >= 0) listState.scrollToItem(index)
         }
     }
 }
