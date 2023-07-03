@@ -16,4 +16,5 @@ interface WatchHistoryRepository {
     suspend fun getStreamIdent(streamId: Long): String?
     fun getLastWatchedMedia(): Flow<List<WatchHistoryEntry>>
     suspend fun removeWatchHistoryEntry(mediaId: String)
+    suspend fun getLastSelectedStream(mediaId: String?): MediaStream?
 }

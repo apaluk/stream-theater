@@ -6,6 +6,7 @@ import com.apaluk.streamtheater.data.database.dao.WatchHistoryDao
 import com.apaluk.streamtheater.data.database.model.WatchHistory
 import com.apaluk.streamtheater.domain.model.media.MediaStream
 import com.apaluk.streamtheater.domain.model.media.WatchHistoryEntry
+import com.apaluk.streamtheater.domain.model.media.util.toMediaStream
 import com.apaluk.streamtheater.domain.model.media.util.toStream
 import com.apaluk.streamtheater.domain.model.media.util.toWatchHistoryEntry
 import com.apaluk.streamtheater.domain.repository.WatchHistoryRepository
@@ -87,5 +88,18 @@ class WatchHistoryRepositoryImpl(
 
     override suspend fun removeWatchHistoryEntry(mediaId: String) {
         watchHistoryDao.removeFromWatchHistory(mediaId)
+    }
+
+    override suspend fun getLastSelectedStream(mediaId: String?): MediaStream? {
+        var streamId: Long? = null
+        if(mediaId != null)
+            streamId = watchHistoryDao.getLastUserSelectedStreamId(mediaId)
+        if(streamId == null)
+            streamId = watchHistoryDao.getLastUserSelectedStreamId()
+
+        return if(streamId != null)
+            watchHistoryDao.getStreamById(streamId)?.toMediaStream()
+        else
+            null
     }
 }

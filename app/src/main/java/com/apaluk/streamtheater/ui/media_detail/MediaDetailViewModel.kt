@@ -86,8 +86,8 @@ class MediaDetailViewModel @Inject constructor(
         }
         // get streams
         viewModelScope.launch {
-            mediaIdForStreams.collectLatest { mediaId ->
-                getStreamsUiState(mediaId, streamsMediaType).collect { streamsUiState ->
+            mediaIdForStreams.collectLatest { childMediaId ->
+                getStreamsUiState(childMediaId, mediaId, streamsMediaType).collect { streamsUiState ->
                     _uiState.update {
                         it.copy(streamsUiState = streamsUiState)
                     }

@@ -93,7 +93,9 @@ object DataModule {
     fun provideStDatabase(
         @ApplicationContext context: Context
     ): StDatabase =
-        Room.databaseBuilder(context, StDatabase::class.java, "stDatabase").build()
+        Room.databaseBuilder(context, StDatabase::class.java, "stDatabase")
+            .addMigrations(StDatabase.MIGRATION_1_2)
+            .build()
 
     @Provides
     fun provideStreamCinemaRepository(

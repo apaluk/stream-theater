@@ -32,6 +32,8 @@ fun MediaStreamChip(
     onClick: () -> Unit = {},
     isSelected: Boolean = false
 ) {
+    val fileSize = remember { mediaStream.size.formatFileSize() }
+    val transferSpeed = remember { mediaStream.speed.formatTransferSpeed() }
     val backgroundColor by
         if (isSelected) {
             val colorTransition = rememberInfiniteTransition()
@@ -84,13 +86,13 @@ fun MediaStreamChip(
                 .weight(1f)
         ) {
             Text(
-                text = mediaStream.size.formatFileSize(),
+                text = fileSize,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = mediaStream.speed.formatTransferSpeed(),
+                text = transferSpeed,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

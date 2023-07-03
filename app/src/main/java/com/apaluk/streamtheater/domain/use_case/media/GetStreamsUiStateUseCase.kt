@@ -9,31 +9,52 @@ import javax.inject.Inject
 
 class GetStreamsUiStateUseCase @Inject constructor(
     private val streamCinemaRepository: StreamCinemaRepository,
-    private val watchHistoryRepository: WatchHistoryRepository
+    private val watchHistoryRepository: WatchHistoryRepository,
+    private val autoSelectStream: AutoSelectStreamUseCase
 ) {
-    operator fun invoke(mediaId: String, streamsMediaType: StreamsMediaType): Flow<StreamsUiState?> = flow {
-        val streams = streamCinemaRepository.getMediaStreams(mediaId).last().data?.sortedBy { stream -> stream.size }
+    operator fun invoke(mediaId: String, parentMediaId: String, streamsMediaType: StreamsMediaType): Flow<StreamsUiState?> = flow {
+        // get media streams from StreamCinema API
+        val streams = streamCinemaRepository.getMediaStreams(mediaId).last().data?.sortedBy { stream -> stream.speed }
             ?: run {
                 emit(null)
                 return@flow
             }
+        emit(StreamsUiState(streams = streams))
+
+        // create watch history flow for further uses
         val watchHistoryFlow = when (streamsMediaType) {
             StreamsMediaType.Movie -> watchHistoryRepository.getMediaWatchHistory(mediaId)
             StreamsMediaType.TvShowEpisode -> watchHistoryRepository.getTvShowEpisodeWatchHistory(mediaId)
         }
+
+        // get last watched stream of this media (if any)
+        val lastWatchedStream = watchHistoryFlow.firstOrNull()?.firstOrNull()
+        if(lastWatchedStream != null) {
+            emit(StreamsUiState(
+                streams = streams,
+                selectedStreamId = watchHistoryRepository.getStreamIdent(lastWatchedStream.streamId)
+            ))
+        } else {
+            // if no last watched stream, try auto select stream
+            autoSelectStream(parentMediaId, streams)?.let { stream ->
+                emit(StreamsUiState(
+                    streams = streams,
+                    selectedStreamId = stream.ident
+                ))
+            }
+        }
+        // continue emitting watch history updates
         emitAll(
             watchHistoryFlow
-                .map { it.firstOrNull() }
+                .mapNotNull { it.firstOrNull() }
                 .distinctUntilChanged()
                 .map {
                     StreamsUiState(
                         streams = streams,
-                        selectedStreamId = watchHistoryRepository.getStreamIdent(it?.streamId)
+                        selectedStreamId = watchHistoryRepository.getStreamIdent(it.streamId)
                     )
                 }
         )
     }
 }
 
-private suspend fun WatchHistoryRepository.getStreamIdent(streamId: Long?): String? =
-    if (streamId == null) null else getStreamIdent(streamId)

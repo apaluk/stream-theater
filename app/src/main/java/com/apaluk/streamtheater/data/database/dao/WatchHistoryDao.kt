@@ -74,4 +74,26 @@ interface WatchHistoryDao {
         WHERE mediaId=:mediaId
     """)
     suspend fun removeFromWatchHistory(mediaId: String)
+
+    @Query("""
+        SELECT streamId FROM watchHistory
+        WHERE mediaId=:mediaId AND isAutoSelected=0
+        ORDER BY lastUpdate DESC
+        LIMIT 1
+    """)
+    suspend fun getLastUserSelectedStreamId(mediaId: String): Long?
+
+    @Query("""
+        SELECT streamId FROM watchHistory
+        WHERE isAutoSelected=0
+        ORDER BY lastUpdate DESC
+        LIMIT 1
+    """)
+    suspend fun getLastUserSelectedStreamId(): Long?
+
+    @Query("""
+        SELECT * FROM streams
+        WHERE id=:streamId
+    """)
+    suspend fun getStreamById(streamId: Long): Stream?
 }

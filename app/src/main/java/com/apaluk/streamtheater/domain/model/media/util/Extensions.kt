@@ -36,6 +36,14 @@ fun MediaStream.toStream(): Stream =
         language = audios.firstOrNull()
     )
 
+fun Stream.toMediaStream(): MediaStream =
+    MediaStream(
+        ident = ident,
+        video = VideoDefinition.values()[definition],
+        speed = speed.toDouble(),
+        audios = listOfNotNull(language),
+    )
+
 private fun VideoDefinition.toInt() = ordinal
 
 fun MediaInfo.toMediaBrief(): MediaBrief =
