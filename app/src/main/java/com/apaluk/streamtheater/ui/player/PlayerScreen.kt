@@ -4,6 +4,7 @@ import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -17,7 +18,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
-import com.apaluk.streamtheater.core.navigation.StNavActions
 import com.apaluk.streamtheater.core.util.millisToSeconds
 import com.apaluk.streamtheater.ui.common.composable.*
 import kotlinx.coroutines.delay
@@ -27,12 +27,13 @@ import java.util.concurrent.TimeUnit
 
 @Composable
 fun PlayerScreen(
-    navActions: StNavActions,
+    modifier: Modifier = Modifier,
+    onNavigateUp: () -> Unit = {},
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     SingleEventHandler(uiState.navigateUpEvent) {
-        navActions.navigateUp()
+        onNavigateUp()
     }
     UiStateAnimator(uiState = uiState.uiState) {
         uiState.videoUrl?.let {
