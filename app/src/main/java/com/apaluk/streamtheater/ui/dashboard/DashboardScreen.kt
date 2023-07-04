@@ -15,7 +15,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.apaluk.streamtheater.R
-import com.apaluk.streamtheater.core.navigation.StNavActions
 import com.apaluk.streamtheater.ui.common.composable.SingleEventHandler
 import com.apaluk.streamtheater.ui.common.composable.TopAppBarAction
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
@@ -24,7 +23,8 @@ import com.apaluk.streamtheater.ui.theme.StTheme
 @Composable
 fun DashboardScreen(
     modifier: Modifier = Modifier,
-    navActions: StNavActions
+    onNavigateToSearch: () -> Unit = {},
+    onNavigateToMediaDetail: (String) -> Unit = {},
 ) {
     val viewModel: DashboardViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
@@ -35,7 +35,7 @@ fun DashboardScreen(
                 actions = {
                     TopAppBarAction(
                         icon = R.drawable.ic_search_24,
-                        onClick = { navActions.navigateToSearch() }
+                        onClick = onNavigateToSearch
                     )
                 }
             )
@@ -49,10 +49,10 @@ fun DashboardScreen(
         }
     )
     SingleEventHandler(uiState.navigateToMediaDetailEvent) {
-        navActions.navigateToMediaDetail(it)
+        onNavigateToMediaDetail(it)
     }
     SingleEventHandler(uiState.navigateToSearchEvent) {
-        navActions.navigateToSearch()
+        onNavigateToSearch()
     }
 }
 

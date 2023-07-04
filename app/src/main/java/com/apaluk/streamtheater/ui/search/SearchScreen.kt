@@ -3,11 +3,30 @@
 package com.apaluk.streamtheater.ui.search
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -23,19 +42,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.apaluk.streamtheater.R
-import com.apaluk.streamtheater.core.navigation.StNavActions
 import com.apaluk.streamtheater.ui.common.composable.BackButton
 import com.apaluk.streamtheater.ui.common.composable.DefaultEmptyState
-import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
 import com.apaluk.streamtheater.ui.common.composable.StButton
+import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.theme.StTheme
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SearchScreen(
-    navActions: StNavActions,
     modifier: Modifier = Modifier,
+    onNavigateUp: () -> Unit = {},
+    onNavigateToMediaDetail: (String) -> Unit = {},
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
@@ -43,11 +62,11 @@ fun SearchScreen(
         modifier = modifier,
         uiState = uiState.value,
         onSearchScreenAction = viewModel::onSearchScreenAction,
-        onBack = { navActions.navigateUp() }
+        onBack = { onNavigateUp() }
     )
     LaunchedEffect(uiState.value.selectedMediaId) {
         uiState.value.selectedMediaId?.let {
-            navActions.navigateToMediaDetail(it)
+            onNavigateToMediaDetail(it)
         }
         viewModel.onSearchScreenAction(SearchScreenAction.MediaSelected(null))
     }

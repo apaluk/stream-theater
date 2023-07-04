@@ -26,59 +26,27 @@ import com.apaluk.streamtheater.ui.search.SearchScreen
 @Composable
 fun StNavGraph(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController(),
-    navActions: StNavActions = remember { StNavActions(navController) }
+    navController: NavHostController = rememberNavController()
 ) {
     NavHost(
         navController = navController,
         startDestination = LOGIN_ROUTE,
         modifier = modifier
     ) {
-        composable(
-            route = LOGIN_ROUTE
-        ) {
-            LoginScreen(
-                modifier = modifier,
-                navActions = navActions
-            )
-        }
-        composable(
-            route = DASHBOARD_ROUTE
-        ) {
-            DashboardScreen(
-                modifier = modifier,
-                navActions = navActions
-            )
-        }
-        composable(
-            route = SEARCH_ROUTE
-        ) {
-            SearchScreen(
-                modifier = modifier,
-                navActions = navActions
-            )
-        }
-        composable(
-            route = MEDIA_DETAIL_ROUTE,
-            arguments = listOf(
-                navArgument(MEDIA_ID_ARG) { type = NavType.StringType}
-            )
-        ) {
-            MediaDetailScreen(
-                modifier = modifier,
-                navActions = navActions,
-            )
-        }
-        composable(
-            route = VIDEO_PLAYER_ROUTE,
-            arguments = listOf(
-                navArgument(WEBSHARE_IDENT_ARG) { type = NavType.StringType},
-                navArgument(WATCH_HISTORY_ID_ARG) { type = NavType.LongType }
-            )
-        ) {
-            PlayerScreen(
-                navActions = navActions,
-            )
-        }
+        loginScreen(
+            onLoggedIn = navController::navigateToDashboard
+        )
+        dashboardScreen(
+            onNavigateToSearch = navController::navigateToSearch,
+            onNavigateToMediaDetail = navController::navigateToMediaDetail
+        )
+        searchScreen(
+            onNavigateUp = navController::navigateUp,
+            onNavigateToMediaDetail = navController::navigateToMediaDetail
+        )
+        mediaGraph(
+            onNavigateUp = navController::navigateUp,
+            onPlayStream = navController::navigateToPlayer
+        )
     }
 }

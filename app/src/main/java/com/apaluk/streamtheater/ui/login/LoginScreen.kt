@@ -30,17 +30,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.apaluk.streamtheater.R
-import com.apaluk.streamtheater.core.navigation.StNavActions
+import com.apaluk.streamtheater.ui.common.composable.StButton
 import com.apaluk.streamtheater.ui.common.composable.TextFieldWithHeader
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
-import com.apaluk.streamtheater.ui.common.composable.StButton
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.theme.StTheme
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    navActions: StNavActions,
+    onLoggedIn: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -52,7 +51,7 @@ fun LoginScreen(
     LaunchedEffect(uiState.loggedIn) {
         if(uiState.loggedIn) {
             viewModel.onLoginScreenAction(LoginScreenAction.OnLoggedIn)
-            navActions.navigateToDashboard()
+            onLoggedIn()
         }
     }
 }

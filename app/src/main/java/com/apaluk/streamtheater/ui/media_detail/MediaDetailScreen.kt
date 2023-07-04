@@ -14,7 +14,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.apaluk.streamtheater.core.navigation.StNavActions
 import com.apaluk.streamtheater.core.util.exhaustive
 import com.apaluk.streamtheater.domain.model.media.*
 import com.apaluk.streamtheater.ui.common.composable.BackButton
@@ -29,13 +28,14 @@ import com.apaluk.streamtheater.ui.theme.StTheme
 @Composable
 fun MediaDetailScreen(
     modifier: Modifier = Modifier,
-    navActions: StNavActions,
+    onNavigateUp: () -> Unit = {},
+    onPlayStream: (String, Long) -> Unit = { _, _ -> },
     viewModel: MediaDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     TopAppBar(
         navigationIcon = {
-            BackButton(onBack = { navActions.navigateUp() })
+            BackButton(onBack = { onNavigateUp() })
         },
         title = {}
     )
@@ -47,7 +47,7 @@ fun MediaDetailScreen(
         )
     }
     SingleEventHandler(uiState.playStreamEvent) { params ->
-        navActions.navigateToPlayer(params.ident, params.watchHistoryId)
+        onPlayStream(params.ident, params.watchHistoryId)
     }
 }
 
