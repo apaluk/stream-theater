@@ -1,13 +1,23 @@
-package com.apaluk.streamtheater.ui.media_detail.util
+package com.apaluk.streamtheater.ui.media.media_detail.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import com.apaluk.streamtheater.R
 import com.apaluk.streamtheater.core.util.Constants
-import com.apaluk.streamtheater.domain.model.media.*
+import com.apaluk.streamtheater.core.util.withLeadingZeros
+import com.apaluk.streamtheater.domain.model.media.MediaDetail
+import com.apaluk.streamtheater.domain.model.media.MediaDetailMovie
+import com.apaluk.streamtheater.domain.model.media.MediaDetailTvShow
+import com.apaluk.streamtheater.domain.model.media.MediaProgress
+import com.apaluk.streamtheater.domain.model.media.TvShowEpisode
+import com.apaluk.streamtheater.domain.model.media.TvShowSeason
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
-import com.apaluk.streamtheater.ui.media_detail.*
-import com.apaluk.streamtheater.ui.media_detail.tv_show.TvShowPosterData
+import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailScreenUiState
+import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.MovieMediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.StreamsUiState
+import com.apaluk.streamtheater.ui.media.media_detail.TvShowMediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.tv_show.TvShowPosterData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -58,6 +68,13 @@ fun TvShowMediaDetailUiState.selectedSeason(): TvShowSeason? =
         seasons[selectedSeasonIndex]
     else null
 
+fun TvShowMediaDetailUiState.selectedEpisode(): TvShowEpisode? =
+    if (selectedEpisodeIndex != null
+        && episodes != null
+        && selectedEpisodeIndex in episodes.indices
+    ) episodes[selectedEpisodeIndex]
+    else null
+
 val TvShowEpisode.relativeProgress: Float?
     get() = progress?.let { (it.progressSeconds.toFloat() / duration.toFloat()).coerceIn(0f, 1f) }
 
@@ -65,6 +82,26 @@ val StreamsUiState.selectedIndex: Int?
     get() = selectedStreamId?.let { streamId ->
         streams.indexOfFirst { it.ident == streamId }
     }
+
+fun MediaDetailUiState.toPlayerMediaInfo(): PlayerMediaInfo = when(this) {
+    is MovieMediaDetailUiState -> PlayerMediaInfo.Movie(title = movie.title)
+    is TvShowMediaDetailUiState -> {
+        val selectedEpisode = selectedEpisode()
+        PlayerMediaInfo.TvShow(
+            title = tvShow.title,
+            seasonEpisode = seasonEpisodeText(selectedSeason(), selectedEpisode),
+            episodeName = selectedEpisode?.title
+        )
+    }
+}
+
+fun seasonEpisodeText(season: TvShowSeason?, episode: TvShowEpisode?): String? =
+    if(episode == null)
+        null
+    else if(season != null)
+        "S${season.orderNumber.withLeadingZeros(2)}E${episode.orderNumber.withLeadingZeros(2)}"
+    else
+        "E${episode.orderNumber.withLeadingZeros(2)}"
 
 @Composable
 @ReadOnlyComposable

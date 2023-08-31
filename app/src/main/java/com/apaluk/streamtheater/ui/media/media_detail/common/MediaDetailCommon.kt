@@ -1,4 +1,4 @@
-package com.apaluk.streamtheater.ui.media_detail.common
+package com.apaluk.streamtheater.ui.media.media_detail.common
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

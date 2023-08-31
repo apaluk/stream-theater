@@ -1,8 +1,6 @@
 package com.apaluk.streamtheater.core.navigation
 
 import com.apaluk.streamtheater.core.navigation.StNavArgs.MEDIA_ID_ARG
-import com.apaluk.streamtheater.core.navigation.StNavArgs.WATCH_HISTORY_ID_ARG
-import com.apaluk.streamtheater.core.navigation.StNavArgs.WEBSHARE_IDENT_ARG
 import com.apaluk.streamtheater.core.navigation.StScreens.DASHBOARD_SCREEN
 import com.apaluk.streamtheater.core.navigation.StScreens.LOGIN_SCREEN
 import com.apaluk.streamtheater.core.navigation.StScreens.MEDIA_DETAIL_SCREEN
@@ -21,8 +19,6 @@ object StScreens {
 
 object StNavArgs {
     const val MEDIA_ID_ARG = "mediaId"
-    const val WEBSHARE_IDENT_ARG = "ident"
-    const val WATCH_HISTORY_ID_ARG = "watchHistoryId"
 }
 
 object StDestinations {
@@ -31,5 +27,5 @@ object StDestinations {
     const val SEARCH_ROUTE = SEARCH_SCREEN
     const val MEDIA_ROUTE = "$MEDIA_GRAPH/{$MEDIA_ID_ARG}"
     const val MEDIA_DETAIL_ROUTE = "$MEDIA_DETAIL_SCREEN/{$MEDIA_ID_ARG}"
-    const val VIDEO_PLAYER_ROUTE = "$VIDEO_PLAYER_SCREEN/{$WEBSHARE_IDENT_ARG}/{$WATCH_HISTORY_ID_ARG}"
+    const val VIDEO_PLAYER_ROUTE = VIDEO_PLAYER_SCREEN
 }

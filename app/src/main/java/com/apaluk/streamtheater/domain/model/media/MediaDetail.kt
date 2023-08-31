@@ -71,3 +71,11 @@ data class TvShowSeasonEpisodes(
     val episodes: List<TvShowEpisode> = emptyList(),
     val selectedEpisodeIndex: Int? = null
 )
+
+data class FindNeighbourSeasonEpisodeResult(
+    val seasonIndex: Int?,
+    val seasonId: String,
+    val episodeIndex: Int,
+    val episodeId: String,
+    val seasonHasChanged: Boolean
+)

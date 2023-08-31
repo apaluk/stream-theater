@@ -1,4 +1,4 @@
-package com.apaluk.streamtheater.ui.media_detail.streams
+package com.apaluk.streamtheater.ui.media.media_detail.streams
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import com.apaluk.streamtheater.domain.model.media.DUMMY_MEDIA_STREAMS
 import com.apaluk.streamtheater.domain.model.media.MediaStream
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
-import com.apaluk.streamtheater.ui.media_detail.StreamsUiState
-import com.apaluk.streamtheater.ui.media_detail.util.selectedIndex
+import com.apaluk.streamtheater.ui.media.media_detail.StreamsUiState
+import com.apaluk.streamtheater.ui.media.media_detail.util.selectedIndex
 import com.apaluk.streamtheater.ui.theme.StTheme
 import com.apaluk.streamtheater.R
 

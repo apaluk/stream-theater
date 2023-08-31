@@ -1,4 +1,4 @@
-package com.apaluk.streamtheater.ui.media_detail.tv_show
+package com.apaluk.streamtheater.ui.media.media_detail.tv_show
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,16 +50,16 @@ import com.apaluk.streamtheater.ui.common.composable.MediaTitle
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
 import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
-import com.apaluk.streamtheater.ui.media_detail.MediaDetailAction
-import com.apaluk.streamtheater.ui.media_detail.TvShowMediaDetailUiState
-import com.apaluk.streamtheater.ui.media_detail.common.DropDownSelector
-import com.apaluk.streamtheater.ui.media_detail.common.MediaDetailPoster
-import com.apaluk.streamtheater.ui.media_detail.common.StColors
-import com.apaluk.streamtheater.ui.media_detail.util.generalInfoText
-import com.apaluk.streamtheater.ui.media_detail.util.isInProgress
-import com.apaluk.streamtheater.ui.media_detail.util.relativeProgress
-import com.apaluk.streamtheater.ui.media_detail.util.requireName
-import com.apaluk.streamtheater.ui.media_detail.util.selectedSeasonName
+import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailAction
+import com.apaluk.streamtheater.ui.media.media_detail.TvShowMediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.common.DropDownSelector
+import com.apaluk.streamtheater.ui.media.media_detail.common.MediaDetailPoster
+import com.apaluk.streamtheater.ui.media.media_detail.common.StColors
+import com.apaluk.streamtheater.ui.media.media_detail.util.generalInfoText
+import com.apaluk.streamtheater.ui.media.media_detail.util.isInProgress
+import com.apaluk.streamtheater.ui.media.media_detail.util.relativeProgress
+import com.apaluk.streamtheater.ui.media.media_detail.util.requireName
+import com.apaluk.streamtheater.ui.media.media_detail.util.selectedSeasonName
 import com.apaluk.streamtheater.ui.theme.StTheme
 
 @Composable

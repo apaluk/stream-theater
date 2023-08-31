@@ -1,4 +1,4 @@
-package com.apaluk.streamtheater.ui.media_detail.tv_show
+package com.apaluk.streamtheater.ui.media.media_detail.tv_show
 
 data class TvShowPosterData(
     val episodeNumber: String? = null,

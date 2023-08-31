@@ -1,20 +1,24 @@
 package com.apaluk.streamtheater.domain.use_case.dashboard
 
 import com.apaluk.streamtheater.core.util.Resource
+import com.apaluk.streamtheater.core.util.mapList
 import com.apaluk.streamtheater.domain.model.dashboard.DashboardMedia
-import com.apaluk.streamtheater.domain.model.media.MediaDetailMovie
-import com.apaluk.streamtheater.domain.model.media.MediaDetailTvShow
 import com.apaluk.streamtheater.domain.model.media.util.toDashboardMedia
 import com.apaluk.streamtheater.domain.repository.MediaInfoRepository
-import com.apaluk.streamtheater.domain.repository.StreamCinemaRepository
 import com.apaluk.streamtheater.domain.repository.WatchHistoryRepository
-import kotlinx.coroutines.flow.*
+import com.apaluk.streamtheater.domain.use_case.media.GetMediaDetailsUseCase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetContinueWatchingMediaListUseCase @Inject constructor(
     private val watchHistoryRepository: WatchHistoryRepository,
-    private val streamCinemaRepository: StreamCinemaRepository,
-    private val mediaInfoRepository: MediaInfoRepository
+    private val mediaInfoRepository: MediaInfoRepository,
+    private val getMediaDetails: GetMediaDetailsUseCase
 ) {
 
     operator fun invoke(): Flow<Resource<List<DashboardMedia>>> = flow {
@@ -25,32 +29,12 @@ class GetContinueWatchingMediaListUseCase @Inject constructor(
         }
         emit(Resource.Success(continueWatchingLocal))
         emitAll(watchHistoryRepository.getLastWatchedMedia()
+            .mapList { it.mediaId }
+            .distinctUntilChanged()
             .map { list ->
-                list.map mapList@{
-                    val mediaDetail = streamCinemaRepository.getMediaDetails(it.mediaId).last().data
-                        ?: return@mapList null
-
-                    when (mediaDetail) {
-                        is MediaDetailMovie -> {
-                            DashboardMedia(
-                                mediaId = it.mediaId,
-                                title = mediaDetail.title,
-                                duration = mediaDetail.duration,
-                                progressSeconds = it.progressSeconds,
-                                imageUrl = mediaDetail.imageUrl
-                            )
-                        }
-                        is MediaDetailTvShow -> {
-                            DashboardMedia(
-                                mediaId = it.mediaId,
-                                title = mediaDetail.title,
-                                duration = mediaDetail.duration,
-                                progressSeconds = it.progressSeconds,
-                                imageUrl = mediaDetail.imageUrl
-                            )
-                        }
-                    }
-                }.filterNotNull()
+                list.mapNotNull {
+                    getMediaDetails(it).data?.toDashboardMedia()
+                }
             }.map { Resource.Success(it) }
         )
     }

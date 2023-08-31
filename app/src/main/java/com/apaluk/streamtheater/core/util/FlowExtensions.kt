@@ -46,20 +46,37 @@ fun <D, R: ResponseDto> webShareRepositoryFlow(
 fun <D, R> repositoryFlow(
     apiOperation: suspend () -> Response<R>,
     resultMapping: suspend (R) -> D
+) = repositoryFlow<D, R, Nothing>(apiOperation, resultMapping, null)
+
+fun <D, R, K> repositoryFlow(
+    apiOperation: suspend () -> Response<R>,
+    resultMapping: suspend (R) -> D,
+    cacheControl: CacheControl<K, D>?
 ): Flow<Resource<D>>  = flow {
     try {
         emit(Resource.Loading())
-        val response = apiOperation.invoke()
-        if (!response.isSuccessful) {
-            emitError("Response: code=${response.code()} error=${response.errorBody()?.string()}")
-            return@flow
+        val cached = cacheControl?.read()
+        if(cached != null) {
+            emit(Resource.Success(data = cached))
         }
-        val body = response.body() ?: run {
-            emitError("Response body is null.")
-            return@flow
+        else {
+            val response = apiOperation.invoke()
+            if (!response.isSuccessful) {
+                emitError(
+                    "Response: code=${response.code()} error=${
+                        response.errorBody()?.string()
+                    }"
+                )
+                return@flow
+            }
+            val body = response.body() ?: run {
+                emitError("Response body is null.")
+                return@flow
+            }
+            val result = resultMapping(body)
+            cacheControl?.write(result)
+            emit(Resource.Success(data = result))
         }
-        val result = resultMapping(body)
-        emit(Resource.Success(data = result))
     } catch (e: Exception) {
         e.throwIfCancellation()
         emit(Resource.Error("Error: ${e.message}"))

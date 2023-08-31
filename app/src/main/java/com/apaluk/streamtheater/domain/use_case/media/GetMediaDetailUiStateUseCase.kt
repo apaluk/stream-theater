@@ -11,10 +11,10 @@ import com.apaluk.streamtheater.domain.repository.StreamCinemaRepository
 import com.apaluk.streamtheater.domain.repository.WatchHistoryRepository
 import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.common.util.toUiState
-import com.apaluk.streamtheater.ui.media_detail.MediaDetailUiState
-import com.apaluk.streamtheater.ui.media_detail.MovieMediaDetailUiState
-import com.apaluk.streamtheater.ui.media_detail.TvShowMediaDetailUiState
-import com.apaluk.streamtheater.ui.media_detail.util.toMediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.MovieMediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.TvShowMediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.util.toMediaDetailUiState
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -25,7 +25,6 @@ class GetMediaDetailUiStateUseCase @Inject constructor(
     private val watchHistoryRepository: WatchHistoryRepository,
     private val getSelectedSeasonUseCase: GetSelectedSeasonUseCase,
     private val getSelectedEpisodeUseCase: GetSelectedEpisodeUseCase,
-    private val getEpisodesWithWatchHistoryUpdatesUseCase: GetEpisodesWithWatchHistoryUpdatesUseCase,
     @ApplicationContext private val context: Context
 ) {
     operator fun invoke(mediaId: String): Flow<Resource<MediaDetailUiState>> = flow {
@@ -97,18 +96,6 @@ class GetMediaDetailUiStateUseCase @Inject constructor(
                                             selectedEpisodeIndex = selectedEpisodeIndex
                                         )
                                     ))
-
-                                    // keep updating episodes with watch history
-                                    getEpisodesWithWatchHistoryUpdatesUseCase(mediaId, null, episodes.data)
-                                        .collect {
-                                            emit(Resource.Success(
-                                                mediaDetailUiState.copy(
-                                                    episodesUiState = episodes.toUiState(),
-                                                    episodes = it,
-                                                    selectedEpisodeIndex = selectedEpisodeIndex
-                                                )
-                                            ))
-                                        }
                                 }
                             }
                         }

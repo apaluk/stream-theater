@@ -1,4 +1,4 @@
-package com.apaluk.streamtheater.ui.media_detail.movie
+package com.apaluk.streamtheater.ui.media.media_detail.movie
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -14,15 +14,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.apaluk.streamtheater.ui.common.composable.MediaTitle
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
-import com.apaluk.streamtheater.ui.media_detail.common.CrewMembers
-import com.apaluk.streamtheater.ui.media_detail.MediaDetailAction
-import com.apaluk.streamtheater.ui.media_detail.MediaDetailScreenUiState
-import com.apaluk.streamtheater.ui.media_detail.MovieMediaDetailUiState
-import com.apaluk.streamtheater.ui.media_detail.common.MediaDetailPoster
-import com.apaluk.streamtheater.ui.media_detail.common.StColors
-import com.apaluk.streamtheater.ui.media_detail.util.generalInfoText
-import com.apaluk.streamtheater.ui.media_detail.util.isInProgress
-import com.apaluk.streamtheater.ui.media_detail.util.relativeProgress
+import com.apaluk.streamtheater.ui.media.media_detail.common.CrewMembers
+import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailAction
+import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailScreenUiState
+import com.apaluk.streamtheater.ui.media.media_detail.MovieMediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.common.MediaDetailPoster
+import com.apaluk.streamtheater.ui.media.media_detail.common.StColors
+import com.apaluk.streamtheater.ui.media.media_detail.util.generalInfoText
+import com.apaluk.streamtheater.ui.media.media_detail.util.isInProgress
+import com.apaluk.streamtheater.ui.media.media_detail.util.relativeProgress
 import com.apaluk.streamtheater.R
 
 @Composable

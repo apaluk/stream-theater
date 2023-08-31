@@ -65,6 +65,22 @@ fun MediaDetail.toMediaBrief(): MediaBrief = when(this) {
     is MediaDetailTvShow -> MediaBrief(0L, id, title, imageUrl, duration)
 }
 
+fun MediaDetail.toDashboardMedia(): DashboardMedia =
+    when(this) {
+        is MediaDetailMovie -> DashboardMedia(
+            mediaId = id,
+            title = title,
+            duration = duration,
+            imageUrl = imageUrl
+        )
+        is MediaDetailTvShow -> DashboardMedia(
+            mediaId = id,
+            title = title,
+            duration = duration,
+            imageUrl = imageUrl
+        )
+    }
+
 internal fun Resource<List<TvShowChild>>.tryGetSeasons(): Resource<List<TvShowSeason>?> {
     if(this !is Resource.Success) return this.convertNonSuccess()
     val seasons = data?.filterIsInstance<TvShowSeason>() ?: return Resource.Success(null)

@@ -8,11 +8,9 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.apaluk.streamtheater.ui.dashboard.DashboardScreen
 import com.apaluk.streamtheater.ui.login.LoginScreen
-import com.apaluk.streamtheater.ui.media_detail.MediaDetailScreen
-import com.apaluk.streamtheater.ui.player.PlayerScreen
+import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailScreen
+import com.apaluk.streamtheater.ui.media.player.PlayerScreen
 import com.apaluk.streamtheater.ui.search.SearchScreen
-
-// TODO separate this navigation to modules
 
 // login screen
 fun NavGraphBuilder.loginScreen(
@@ -72,12 +70,14 @@ fun NavController.navigateToSearch() {
 // media
 fun NavGraphBuilder.mediaGraph(
     onNavigateUp: () -> Unit,
-    onPlayStream: (String, Long) -> Unit,
+    onPlayStream: () -> Unit,
+    navController: NavController
 ) {
     navigation(
         route = StDestinations.MEDIA_ROUTE,
         startDestination = StScreens.MEDIA_DETAIL_SCREEN
     ) {
+        
         composable(
             route = StDestinations.MEDIA_DETAIL_ROUTE,
             arguments = listOf(
@@ -86,18 +86,16 @@ fun NavGraphBuilder.mediaGraph(
         ) {
             MediaDetailScreen(
                 onNavigateUp = onNavigateUp,
-                onPlayStream = onPlayStream
+                onPlayStream = onPlayStream,
+                mediaViewModel = it.sharedViewModel(navController)
             )
         }
         composable(
-            route = StDestinations.VIDEO_PLAYER_ROUTE,
-            arguments = listOf(
-                navArgument(StNavArgs.WEBSHARE_IDENT_ARG) { type = NavType.StringType },
-                navArgument(StNavArgs.WATCH_HISTORY_ID_ARG) { type = NavType.LongType }
-            )
+            route = StDestinations.VIDEO_PLAYER_ROUTE
         ) {
             PlayerScreen(
                 onNavigateUp = onNavigateUp,
+                mediaViewModel = it.sharedViewModel(navController)
             )
         }
     }
@@ -107,7 +105,6 @@ fun NavController.navigateToMediaDetail(mediaId: String) {
     navigate(route = "${StScreens.MEDIA_DETAIL_SCREEN}/$mediaId")
 }
 
-// TODO change param?
-fun NavController.navigateToPlayer(webshareIdent: String, watchHistoryId: Long) {
-    navigate(route = "${StScreens.VIDEO_PLAYER_SCREEN}/$webshareIdent/$watchHistoryId")
+fun NavController.navigateToPlayer() {
+    navigate(route = StScreens.VIDEO_PLAYER_SCREEN)
 }

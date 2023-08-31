@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.apaluk.streamtheater.ui.media_detail
+package com.apaluk.streamtheater.ui.media.media_detail
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -14,23 +14,28 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import com.apaluk.streamtheater.core.util.exhaustive
 import com.apaluk.streamtheater.domain.model.media.*
 import com.apaluk.streamtheater.ui.common.composable.BackButton
+import com.apaluk.streamtheater.ui.common.composable.OnLifecycleEvent
+import com.apaluk.streamtheater.ui.common.composable.ProgressBarDialog
 import com.apaluk.streamtheater.ui.common.composable.SingleEventHandler
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
 import com.apaluk.streamtheater.ui.common.util.UiState
-import com.apaluk.streamtheater.ui.media_detail.movie.MovieMediaDetailContent
-import com.apaluk.streamtheater.ui.media_detail.streams.MediaDetailStreams
-import com.apaluk.streamtheater.ui.media_detail.tv_show.TvShowMediaDetailContent
+import com.apaluk.streamtheater.ui.media.MediaViewModel
+import com.apaluk.streamtheater.ui.media.media_detail.movie.MovieMediaDetailContent
+import com.apaluk.streamtheater.ui.media.media_detail.streams.MediaDetailStreams
+import com.apaluk.streamtheater.ui.media.media_detail.tv_show.TvShowMediaDetailContent
 import com.apaluk.streamtheater.ui.theme.StTheme
 
 @Composable
 fun MediaDetailScreen(
     modifier: Modifier = Modifier,
     onNavigateUp: () -> Unit = {},
-    onPlayStream: (String, Long) -> Unit = { _, _ -> },
-    viewModel: MediaDetailViewModel = hiltViewModel()
+    onPlayStream: () -> Unit = {},
+    viewModel: MediaDetailViewModel = hiltViewModel(),
+    mediaViewModel: MediaViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     TopAppBar(
@@ -47,7 +52,21 @@ fun MediaDetailScreen(
         )
     }
     SingleEventHandler(uiState.playStreamEvent) { params ->
-        onPlayStream(params.ident, params.watchHistoryId)
+        mediaViewModel.playStreamParams.value = params
+        onPlayStream()
+    }
+    SingleEventHandler(mediaViewModel.skipToPreviousVideoEvent) {
+        viewModel.onMediaDetailAction(MediaDetailAction.SkipToPreviousVideo)
+    }
+    SingleEventHandler(mediaViewModel.skipToNextVideoEvent) {
+        viewModel.onMediaDetailAction(MediaDetailAction.SkipToNextVideo)
+    }
+    OnLifecycleEvent { _, event ->
+        when(event) {
+            Lifecycle.Event.ON_PAUSE -> viewModel.onMediaDetailAction(MediaDetailAction.ScreenVisibilityChanged(false))
+            Lifecycle.Event.ON_RESUME -> viewModel.onMediaDetailAction(MediaDetailAction.ScreenVisibilityChanged(true))
+            else -> {}
+        }
     }
 }
 
@@ -92,6 +111,9 @@ fun MediaDetailScreenContent(
                 }
             }
         }
+    }
+    if(uiState.showSeekingProgressBar) {
+        ProgressBarDialog()
     }
 }
 

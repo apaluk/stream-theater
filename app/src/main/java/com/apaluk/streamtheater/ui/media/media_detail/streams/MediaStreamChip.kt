@@ -1,4 +1,4 @@
-package com.apaluk.streamtheater.ui.media_detail.streams
+package com.apaluk.streamtheater.ui.media.media_detail.streams
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColor

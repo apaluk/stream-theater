@@ -6,16 +6,16 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import com.apaluk.streamtheater.domain.model.media.MediaDetailMovie
 import com.apaluk.streamtheater.ui.common.util.UiState
-import com.apaluk.streamtheater.ui.media_detail.MediaDetailScreenContent
-import com.apaluk.streamtheater.ui.media_detail.MediaDetailScreenUiState
+import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailScreenContent
+import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailScreenUiState
 import com.apaluk.streamtheater.ui.theme.StTheme
 import com.apaluk.streamtheater.R
 import com.apaluk.streamtheater.core.util.formatFileSize
 import com.apaluk.streamtheater.domain.model.media.MediaStream
 import com.apaluk.streamtheater.domain.model.media.Subtitles
 import com.apaluk.streamtheater.domain.model.media.VideoDefinition
-import com.apaluk.streamtheater.ui.media_detail.MovieMediaDetailUiState
-import com.apaluk.streamtheater.ui.media_detail.StreamsUiState
+import com.apaluk.streamtheater.ui.media.media_detail.MovieMediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.StreamsUiState
 import org.junit.Rule
 import org.junit.Test
 
