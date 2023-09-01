@@ -74,7 +74,7 @@ data class TvShowSeasonEpisodes(
 
 data class FindNeighbourSeasonEpisodeResult(
     val seasonIndex: Int?,
-    val seasonId: String,
+    val seasonId: String?,
     val episodeIndex: Int,
     val episodeId: String,
     val seasonHasChanged: Boolean

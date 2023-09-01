@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import javax.inject.Inject
+
 @HiltViewModel
 class MediaDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -67,7 +68,6 @@ class MediaDetailViewModel @Inject constructor(
         _uiState.mapNotNull { it.tvShowUiState?.selectedEpisodeIndex }.distinctUntilChanged(),
         _uiState.mapNotNull { it.tvShowUiState?.episodes }.distinctUntilChanged()
     ) { index, episodes ->
-        Timber.d("xxx selected episode (auto) index:$index id:${episodes.getOrNull(index)?.id}")
         episodes.getOrNull(index)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
@@ -237,13 +237,12 @@ class MediaDetailViewModel @Inject constructor(
                 _uiState.update { it.copy(streamsUiState = null) }
 
                 withTimeout(10_000) {
-                    _uiState.updateTvShowUiState {
-                        it.copy(selectedSeasonIndex = neighbourSeasonEpisode.seasonIndex,)
-                    }
-                    selectedSeason.first { it?.id == neighbourSeasonEpisode.seasonId }
-                    Timber.d("xxx selected season: ${selectedSeason.value?.orderNumber}")
-                    _uiState.update { it.copy(streamsUiState = null) }
-                    if(neighbourSeasonEpisode.seasonHasChanged) {
+                    if (neighbourSeasonEpisode.seasonId != null && neighbourSeasonEpisode.seasonHasChanged) {
+                        _uiState.updateTvShowUiState {
+                            it.copy(selectedSeasonIndex = neighbourSeasonEpisode.seasonIndex,)
+                        }
+                        // wait until season is selected
+                        selectedSeason.first { it?.id == neighbourSeasonEpisode.seasonId }
                         val episodes = getSeasonEpisodesUseCase(neighbourSeasonEpisode.seasonId)
                             .takeIf { it.data.isNullOrEmptyList().not() }?.data ?: return@withTimeout
                         _uiState.updateTvShowUiState {
@@ -258,16 +257,16 @@ class MediaDetailViewModel @Inject constructor(
                             it.copy(selectedEpisodeIndex = neighbourSeasonEpisode.episodeIndex)
                         }
                     }
+                    // wait until episode is selected
                     selectedEpisode.first { it?.id == neighbourSeasonEpisode.episodeId }
-                    Timber.d("xxx selected episode:${selectedEpisode.value?.orderNumber} id:${selectedEpisode.value?.id}")
+                    // wait until stream is selected
                     _uiState.first { it.streamsUiState?.selectedStreamId != null }
-                    Timber.d("xxx selected stream: ${_uiState.value.streamsUiState?.selectedStreamId}}")
                     onPlayDefault()
                 }
                 _uiState.update { it.copy(showSeekingProgressBar = false) }
 
                 // set isJumpingToNeighbourEpisode to false after 5s delay to prevent watch history
-                // updates set selected episode
+                // updates from setting selected episode
                 delay(5_000)
             } catch (e: CancellationException) {
                 Timber.w(e)
@@ -283,9 +282,9 @@ class MediaDetailViewModel @Inject constructor(
         neighbourType: FindNeighbourSeasonEpisodeUseCase.NeighbourType
     ): FindNeighbourSeasonEpisodeResult? {
         return findNeighbourSeasonEpisodeUseCase(
-            seasons = _uiState.value.tvShowUiState?.seasons ?: return null,
-            currentSeasonIndex = _uiState.value.tvShowUiState?.selectedSeasonIndex ?: return null,
-            currentSeasonEpisodes = _uiState.value.tvShowUiState?.episodes ?: return null,
+            seasons = _uiState.value.tvShowUiState?.seasons,
+            currentSeasonIndex = _uiState.value.tvShowUiState?.selectedSeasonIndex,
+            currentEpisodes = _uiState.value.tvShowUiState?.episodes ?: return null,
             currentEpisodeIndex = _uiState.value.tvShowUiState?.selectedEpisodeIndex ?: return null,
             neighbourType = neighbourType
         )

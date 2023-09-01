@@ -45,7 +45,6 @@ import com.apaluk.streamtheater.ui.media.media_detail.util.PlayerMediaInfo
 import com.apaluk.streamtheater.ui.theme.videoPlayerControl
 import kotlinx.coroutines.flow.collectLatest
 import okhttp3.OkHttpClient
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @Composable
@@ -165,7 +164,6 @@ fun VideoPlayer(
             onSkipToPrevious = onSkipToPreviousVideo,
             onSkipToNext = onSkipToNextVideo,
         )
-        Timber.d("xxx player controls visible")
     }
     OnLifecycleEvent { _, event ->
         when(event) {

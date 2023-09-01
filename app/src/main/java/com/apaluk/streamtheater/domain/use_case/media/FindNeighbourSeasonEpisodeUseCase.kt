@@ -7,7 +7,6 @@ import com.apaluk.streamtheater.domain.model.media.FindNeighbourSeasonEpisodeRes
 import com.apaluk.streamtheater.domain.model.media.util.tryGetEpisodes
 import com.apaluk.streamtheater.domain.repository.StreamCinemaRepository
 import kotlinx.coroutines.flow.last
-import timber.log.Timber
 import javax.inject.Inject
 
 class FindNeighbourSeasonEpisodeUseCase @Inject constructor(
@@ -18,24 +17,29 @@ class FindNeighbourSeasonEpisodeUseCase @Inject constructor(
     }
 
     suspend operator fun invoke(
-        seasons: List<TvShowSeason>,
-        currentSeasonIndex: Int,
-        currentSeasonEpisodes: List<TvShowEpisode>,
+        seasons: List<TvShowSeason>?,
+        currentSeasonIndex: Int?,
+        currentEpisodes: List<TvShowEpisode>,
         currentEpisodeIndex: Int,
         neighbourType: NeighbourType
     ): FindNeighbourSeasonEpisodeResult? {
         val neighbourEpisodeIndex = currentEpisodeIndex.neighbourIndex(neighbourType)
-        if(neighbourEpisodeIndex in currentSeasonEpisodes.indices) {
+        val seasonId = if (currentSeasonIndex != null) seasons?.get(currentSeasonIndex)?.id else null
+        if(neighbourEpisodeIndex in currentEpisodes.indices) {
             return FindNeighbourSeasonEpisodeResult(
                 seasonIndex = currentSeasonIndex,
-                seasonId = seasons[currentSeasonIndex].id,
+                seasonId = seasonId,
                 episodeIndex = neighbourEpisodeIndex,
-                episodeId = currentSeasonEpisodes[neighbourEpisodeIndex].id,
+                episodeId = currentEpisodes[neighbourEpisodeIndex].id,
                 seasonHasChanged = false
             )
         }
         else {
             // neighbour episode is in another season
+            // if there is no neighbour season available, we are probably in miniseries, so return null
+            currentSeasonIndex ?: return null
+            seasons ?: return null
+
             val neighbourSeasonIndex = currentSeasonIndex.neighbourIndex(neighbourType)
                 .takeIf { it in seasons.indices } ?: return null
             val neighbourSeason = seasons[neighbourSeasonIndex]
@@ -49,9 +53,6 @@ class FindNeighbourSeasonEpisodeUseCase @Inject constructor(
                 NeighbourType.Previous -> episodes.lastIndex
                 NeighbourType.Next -> 0
             }
-
-            val episodesText = episodes.map { "${it.title} (${it.id})" }.joinToString(", ")
-            Timber.d("xxx Found neighbour season episodes selecting index:$episodeIndex from: $episodesText")
 
             return FindNeighbourSeasonEpisodeResult(
                 seasonIndex = neighbourSeasonIndex,

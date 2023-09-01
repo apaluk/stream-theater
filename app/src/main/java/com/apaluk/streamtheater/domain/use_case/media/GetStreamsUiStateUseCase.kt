@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import timber.log.Timber
 import javax.inject.Inject
 
 class GetStreamsUiStateUseCase @Inject constructor(
@@ -65,7 +64,6 @@ class GetStreamsUiStateUseCase @Inject constructor(
                 .mapNotNull { it.firstOrNull()?.streamId }
                 .distinctUntilChanged()
                 .map { streamId ->
-                    Timber.d("xxx streams ui state streamId: $streamId")
                     StreamsUiState(
                         streams = streams,
                         selectedStreamId = watchHistoryRepository.getStreamIdent(streamId)
