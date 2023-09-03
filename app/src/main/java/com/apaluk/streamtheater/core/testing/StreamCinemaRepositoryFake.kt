@@ -15,11 +15,8 @@ class StreamCinemaRepositoryFake: StreamCinemaRepository {
             id = "",
             title = "a$c",
             originalTitle = null,
-            year = "",
-            genre = emptyList(),
-            duration = 1,
-            cast = emptyList(),
-            director = emptyList(),
+            generalInfo = "",
+            cast = "",
             imageUrl = null
         )
     }.toList()

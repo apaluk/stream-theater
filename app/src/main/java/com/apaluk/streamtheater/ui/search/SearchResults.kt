@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -111,13 +112,15 @@ fun SearchResult(
                 originalTitle = item.originalTitle
             )
             Text(
-                modifier = Modifier.padding(vertical = 12.dp),
-                text = item.year,
+                modifier = Modifier.padding(vertical = 16.dp),
+                text = item.generalInfo,
                 color = MaterialTheme.colorScheme.onBackground,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = item.cast.take(3).joinToString(),
+                text = item.cast,
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -134,11 +137,8 @@ fun SearchResultsPreview() {
                 id = "",
                 title = "Pulp fiction",
                 originalTitle = "Pulp fiction",
-                year = "1994",
-                duration = 9240,
-                genre = listOf("Thriller", "Comedy"),
-                cast = listOf("Bruce Willis", "John Travolta", "Samuel L. Jackson"),
-                director = listOf("Quentin Tarantino"),
+                generalInfo = "1994 ${Constants.CHAR_BULLET}  USA  ${Constants.CHAR_BULLET}  Crime, Drama",
+                cast = "Bruce Willis, John Travolta, Samuel L. Jackson",
                 imageUrl = null
             ),
             onClicked = {}

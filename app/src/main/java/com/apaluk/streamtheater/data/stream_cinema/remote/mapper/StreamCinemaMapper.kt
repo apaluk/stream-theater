@@ -1,12 +1,14 @@
 package com.apaluk.streamtheater.data.stream_cinema.remote.mapper
 
 import com.apaluk.streamtheater.core.util.Constants
+import com.apaluk.streamtheater.core.util.commaSeparatedList
 import com.apaluk.streamtheater.core.util.requireNotNullOrEmpty
 import com.apaluk.streamtheater.data.stream_cinema.remote.dto.media.MediaDetailDto
 import com.apaluk.streamtheater.data.stream_cinema.remote.dto.media.MediaTypeDto
 import com.apaluk.streamtheater.data.stream_cinema.remote.dto.media.TvShowChildType
 import com.apaluk.streamtheater.data.stream_cinema.remote.dto.search.HitDto
 import com.apaluk.streamtheater.data.stream_cinema.remote.dto.search.I18nInfoLabelDto
+import com.apaluk.streamtheater.data.stream_cinema.remote.dto.search.InfoLabelsDto
 import com.apaluk.streamtheater.data.stream_cinema.remote.dto.search.SearchResponseDto
 import com.apaluk.streamtheater.data.stream_cinema.remote.dto.streams.MediaStreamsResponseItemDto
 import com.apaluk.streamtheater.data.stream_cinema.remote.dto.streams.SubtitleDto
@@ -26,15 +28,21 @@ fun HitDto.toSearchResultItem(): SearchResultItem? =
             id = id,
             title = getTitle(),
             originalTitle = source.infoLabels.originaltitle,
-            year = source.infoLabels.year?.toString().orEmpty(),
-            genre = source.infoLabels.genre,
-            duration = source.infoLabels.duration ?: 0,
-            cast = source.cast.map { it.name },
-            director = source.infoLabels.director.orEmpty(),
+            generalInfo = source.infoLabels.generalInfo,
+            cast = source.cast.map { it.name }.take(3).joinToString(separator = ", "),
             imageUrl = getImageUrl()
         )
     } catch (e: Exception) {
         null
+    }
+
+val InfoLabelsDto.generalInfo: String
+    get() {
+        val info = mutableListOf<String>()
+        if (year != null) info.add(year.toString())
+        country?.commaSeparatedList(3)?.let { info.add(it) }
+        genre.commaSeparatedList(3)?.let { info.add(it) }
+        return info.joinToString(separator = "  ${Constants.CHAR_BULLET}  ")
     }
 
 fun MediaDetailDto.toMediaDetail(): MediaDetail =
