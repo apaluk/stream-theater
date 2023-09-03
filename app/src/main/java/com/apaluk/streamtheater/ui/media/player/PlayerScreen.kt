@@ -4,6 +4,7 @@ import android.net.Uri
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -96,6 +98,8 @@ fun VideoPlayer(
 
     KeepScreenOn()
     FullScreen()
+
+    BlackVideoPlayerBackground()
 
     val exoPlayer = remember {
         val defaultDataSourceFactory = OkHttpDataSource.Factory(
@@ -202,6 +206,14 @@ fun VideoPlayer(
             }
         }
     }
+}
+
+@Composable
+fun BlackVideoPlayerBackground() {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.Black)
+    )
 }
 
 @Composable
