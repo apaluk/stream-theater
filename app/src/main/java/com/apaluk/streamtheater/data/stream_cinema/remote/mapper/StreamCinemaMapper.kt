@@ -40,15 +40,18 @@ val InfoLabelsDto.generalInfo: String
     get() {
         val info = mutableListOf<String>()
         if (year != null) info.add(year.toString())
-        country?.commaSeparatedList(3)?.let { info.add(it) }
+        country
+            ?.map {it.fixCountryName() }
+            ?.distinct()
+            ?.commaSeparatedList(3)
+            ?.let { info.add(it) }
         genre.commaSeparatedList(3)?.let { info.add(it) }
         return info.joinToString(separator = "  ${Constants.CHAR_BULLET}  ")
     }
 
 fun MediaDetailDto.toMediaDetail(): MediaDetail =
     when(infoLabels.mediatype) {
-        MediaTypeDto.Movie ->
-            MediaDetailMovie(
+        MediaTypeDto.Movie -> MediaDetailMovie(
             id = id,
             title = getTitle(),
             originalTitle = infoLabels.originaltitle,
@@ -57,7 +60,7 @@ fun MediaDetailDto.toMediaDetail(): MediaDetail =
             directors = infoLabels.director,
             writer = infoLabels.writer,
             cast = cast.map { it.name },
-            genre = infoLabels.genre,
+            genre = infoLabels.genre.removeDuplicateGenres(),
             plot = getPlot(),
             duration = streamInfo.video?.duration?.roundToInt() ?: infoLabels.duration,
         )
@@ -66,9 +69,8 @@ fun MediaDetailDto.toMediaDetail(): MediaDetail =
             title = getTitle(),
             originalTitle = infoLabels.originaltitle,
             imageUrl = getImageUrl(),
-            years = tvShowYears(),
             cast = cast.map { it.name },
-            genre = infoLabels.genre,
+            genre = infoLabels.genre.removeDuplicateGenres(),
             plot = getPlot(),
             numSeasons = childrenCount,
             duration = streamInfo.video?.duration?.roundToInt() ?: infoLabels.duration,
@@ -180,7 +182,7 @@ private fun com.apaluk.streamtheater.data.stream_cinema.remote.dto.tv_show.child
         directors = source.infoLabels.director,
         writer = source.infoLabels.writer,
         cast = source.cast.map { it.name },
-        genre = source.infoLabels.genre,
+        genre = source.infoLabels.genre.removeDuplicateGenres(),
         plot = source.i18nInfoLabels.getPlot(),
         imageUrl = source.i18nInfoLabels.getFanArtImageUrl(),
     )
@@ -201,7 +203,3 @@ private fun com.apaluk.streamtheater.data.stream_cinema.remote.dto.tv_show.child
         duration = source.streamInfo?.video?.duration?.roundToInt() ?: source.infoLabels.duration ?: 0
     )
 
-private fun MediaDetailDto.tvShowYears(): String? {
-    val startYear = infoLabels.year ?: return null
-    return "$startYear ${Constants.CHAR_DASH} ${startYear + childrenCount}"
-}

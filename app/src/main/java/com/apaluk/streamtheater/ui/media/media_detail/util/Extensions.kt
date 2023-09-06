@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import com.apaluk.streamtheater.R
 import com.apaluk.streamtheater.core.util.Constants
+import com.apaluk.streamtheater.core.util.commaSeparatedList
 import com.apaluk.streamtheater.core.util.withLeadingZeros
 import com.apaluk.streamtheater.domain.model.media.MediaDetail
 import com.apaluk.streamtheater.domain.model.media.MediaDetailMovie
@@ -105,23 +106,29 @@ fun seasonEpisodeText(season: TvShowSeason?, episode: TvShowEpisode?): String? =
 
 @Composable
 @ReadOnlyComposable
-fun MediaDetailTvShow.generalInfoText(): String {
-    val infos = mutableListOf<String>()
-    years?.let { infos.add(it) }
-    infos.add(stringResourceSafe(id = R.string.st_tv_show_count_of_seasons, numSeasons))
-    if(genre.isNotEmpty()) {
-        infos.add(genre.joinToString(separator = " / "))
-    }
-    return infos.joinToString(separator = MEDIA_INFO_SEPARATOR)
-}
-
-@Composable
-@ReadOnlyComposable
 fun TvShowSeason.requireName(): String =
     title ?: stringResourceSafe(id = R.string.st_tv_show_season_number, orderNumber)
 
 @Composable
 @ReadOnlyComposable
 fun TvShowMediaDetailUiState.selectedSeasonName(): String? = selectedSeason()?.requireName()
+
+@Composable
+@ReadOnlyComposable
+fun TvShowMediaDetailUiState.generalInfoText(): String {
+    val info = mutableListOf<String>()
+    val seasonYears = seasons?.map { it.year }?.sortedBy { it?.toInt() ?: 0 }
+    if (seasonYears.isNullOrEmpty().not()) {
+        if(seasonYears?.size == 1) {
+            seasonYears.first()?.let { info.add(it) }
+        }
+        else {
+            info.add("${seasonYears?.first()} ${Constants.CHAR_DASH} ${seasonYears?.last()}")
+        }
+    }
+    info.add(stringResourceSafe(id = R.string.st_tv_show_count_of_seasons, tvShow.numSeasons))
+    tvShow.genre.commaSeparatedList(3)?.let { info.add(it) }
+    return info.joinToString(separator = MEDIA_INFO_SEPARATOR)
+}
 
 

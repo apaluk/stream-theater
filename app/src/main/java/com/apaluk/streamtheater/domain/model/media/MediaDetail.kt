@@ -22,7 +22,6 @@ data class MediaDetailTvShow(
     val title: String,
     val originalTitle: String?,
     val imageUrl: String?,
-    val years: String?,
     val genre: List<String>,
     val plot: String?,
     val cast: List<String>,
