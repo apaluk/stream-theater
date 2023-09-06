@@ -11,7 +11,6 @@ import com.apaluk.streamtheater.domain.model.media.util.toStream
 import com.apaluk.streamtheater.domain.model.media.util.toWatchHistoryEntry
 import com.apaluk.streamtheater.domain.repository.WatchHistoryRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 class WatchHistoryRepositoryImpl(
     private val watchHistoryDao: WatchHistoryDao
@@ -79,12 +78,8 @@ class WatchHistoryRepositoryImpl(
         watchHistoryDao.getWatchHistoryById(watchHistoryId)?.toWatchHistoryEntry()
 
     override fun getLastWatchedMedia(): Flow<List<WatchHistoryEntry>> =
-        watchHistoryDao.getLastWatchedMediaIds()
-            .map { list ->
-                list.mapNotNull { mediaId ->
-                    watchHistoryDao.getLatestWatchHistoryEntry(mediaId)
-                }.map { it.toWatchHistoryEntry() }
-            }
+        watchHistoryDao.getLastWatchedWatchHistoryEntries().mapList { it.toWatchHistoryEntry() }
+
 
     override suspend fun removeWatchHistoryEntry(mediaId: String) {
         watchHistoryDao.removeFromWatchHistory(mediaId)

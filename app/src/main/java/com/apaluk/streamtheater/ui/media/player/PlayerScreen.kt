@@ -133,8 +133,10 @@ fun VideoPlayer(
                     ) {
                         onPlayerScreenAction(
                             PlayerScreenAction.VideoProgressChanged(
-                                newPosition.positionMs.millisToSeconds().toInt(),
-                                duration.millisToSeconds().toInt()
+                                VideoProgress(
+                                    newPosition.positionMs.millisToSeconds().toInt(),
+                                    duration.millisToSeconds().toInt()
+                                )
                             )
                         )
                     }
@@ -176,8 +178,10 @@ fun VideoPlayer(
                 exoPlayer.pause()
                 onPlayerScreenAction(
                     PlayerScreenAction.VideoProgressChanged(
-                        exoPlayer.currentPosition.millisToSeconds().toInt(),
-                        exoPlayer.duration.millisToSeconds().toInt()
+                        VideoProgress(
+                            exoPlayer.currentPosition.millisToSeconds().toInt(),
+                            exoPlayer.duration.millisToSeconds().toInt()
+                        )
                     )
                 )
             }
@@ -199,8 +203,10 @@ fun VideoPlayer(
             if(!isPlaying)  {
                 onPlayerScreenAction(
                     PlayerScreenAction.VideoProgressChanged(
-                        exoPlayer.currentPosition.millisToSeconds().toInt(),
-                        exoPlayer.duration.millisToSeconds().toInt()
+                        VideoProgress(
+                            exoPlayer.currentPosition.millisToSeconds().toInt(),
+                            exoPlayer.duration.millisToSeconds().toInt()
+                        )
                     )
                 )
             }

@@ -56,19 +56,17 @@ interface WatchHistoryDao {
     suspend fun getStreamIdent(streamId: Long): String?
 
     @Query("""
-        SELECT mediaId FROM watchHistory
-        GROUP BY mediaId
+        SELECT *
+        FROM watchHistory AS wh1
+        WHERE lastUpdate = (
+            SELECT MAX(lastUpdate)
+            FROM watchHistory AS wh2
+            WHERE wh1.mediaId = wh2.mediaId
+        )
         ORDER BY lastUpdate DESC
     """
     )
-    fun getLastWatchedMediaIds(): Flow<List<String>>
-
-    @Query("""
-        SELECT * FROM watchHistory
-        WHERE mediaId=:mediaId
-        ORDER BY lastUpdate DESC
-    """)
-    suspend fun getLatestWatchHistoryEntry(mediaId: String): WatchHistory?
+    fun getLastWatchedWatchHistoryEntries(): Flow<List<WatchHistory>>
 
     @Query("""
         DELETE FROM watchHistory

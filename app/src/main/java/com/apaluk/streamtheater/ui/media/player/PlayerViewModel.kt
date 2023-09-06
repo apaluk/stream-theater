@@ -11,15 +11,21 @@ import com.apaluk.streamtheater.ui.common.util.toUiState
 import com.apaluk.streamtheater.ui.media.media_detail.PlayStreamParams
 import com.apaluk.streamtheater.ui.media.media_detail.util.PlayerMediaInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
@@ -32,6 +38,19 @@ class PlayerViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     private val playStreamParams = MutableStateFlow<PlayStreamParams?>(null)
+
+
+    @OptIn(FlowPreview::class)
+    private val currentVideoProgress = MutableSharedFlow<VideoProgress>().apply {
+        debounce(500.milliseconds)
+            .onEach { videoProgress ->
+                playStreamParams.value?.watchHistoryId?.let {
+                    updateWatchHistoryOnVideoProgress(it, videoProgress.progress, videoProgress.totalDuration)
+
+                }
+            }
+            .launchIn(viewModelScope)
+    }
 
     init {
         viewModelScope.launch {
@@ -77,9 +96,7 @@ class PlayerViewModel @Inject constructor(
 
     private fun onVideoProgressChanged(action: PlayerScreenAction.VideoProgressChanged) {
         viewModelScope.launch {
-            playStreamParams.value?.watchHistoryId?.let {
-                updateWatchHistoryOnVideoProgress(it, action.progress, action.totalDuration)
-            }
+            currentVideoProgress.emit(action.progress)
         }
     }
 
@@ -105,9 +122,11 @@ data class PlayerScreenState(
 
 sealed class PlayerScreenAction {
     object VideoEnded: PlayerScreenAction()
-    data class VideoProgressChanged(
-        val progress: Int,
-        val totalDuration: Int
-    ): PlayerScreenAction()
+    data class VideoProgressChanged(val progress: VideoProgress): PlayerScreenAction()
     data class PlayerControlsVisibilityChanged(val visible: Boolean): PlayerScreenAction()
 }
+
+data class VideoProgress(
+    val progress: Int,
+    val totalDuration: Int
+)
