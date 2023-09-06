@@ -24,6 +24,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -69,13 +70,11 @@ fun TvShowMediaDetailContent(
     onMediaDetailAction: (MediaDetailAction) -> Unit = {},
 ) {
     val mediaDetailTvShow = tvShowUiState.tvShow
-    val showSeasonSelectorDialog = remember {
-        mutableStateOf(false)
+    val showSeasonSelectorDialog = remember { mutableStateOf(false) }
+    val generalInfoText by remember { mutableStateOf("") }.apply {
+        value = tvShowUiState.generalInfoText()
     }
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-    ) {
+    Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         tvShowUiState.posterData?.let { posterData ->
             MediaDetailPoster(
                 imageUrl = posterData.imageUrl,
@@ -110,7 +109,7 @@ fun TvShowMediaDetailContent(
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = mediaDetailTvShow.generalInfoText(),
+            text = generalInfoText,
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.bodyMedium
         )
@@ -211,6 +210,12 @@ fun MediaDetailTvShowEpisode(
     isSelected: Boolean = false
 ) {
     val background = if(isSelected) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.background
+    val episodeOrderNumber by remember(key1 = episode.orderNumber) {
+        mutableStateOf(episode.orderNumber.withLeadingZeros(2))
+    }
+    val episodeDuration by remember(key1 = episode.duration) {
+        mutableStateOf(episode.duration.formatDuration())
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -262,14 +267,13 @@ fun MediaDetailTvShowEpisode(
                 .padding(start = 16.dp, end = 12.dp)
                 .width(28.dp)
                 .fillMaxHeight(),
-            text = episode.orderNumber.withLeadingZeros(2),
+            text = episodeOrderNumber,
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.End
         )
         Text(
-            modifier = Modifier
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             text = episode.title ?: stringResourceSafe(
                 id = R.string.st_tv_show_episode_number,
                 episode.orderNumber
@@ -281,7 +285,7 @@ fun MediaDetailTvShowEpisode(
             modifier = Modifier
                 .padding(start = 16.dp, end = 32.dp)
                 .width(60.dp),
-            text = episode.duration.formatDuration(),
+            text = episodeDuration,
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.End
@@ -323,10 +327,9 @@ fun TvShowMediaDetailContentPreview() {
             tvShowUiState = TvShowMediaDetailUiState(
                 tvShow = MediaDetailTvShow(
                     id = "",
-                    title = "Nezname dejiny Spojenych statu americkych",
-                    originalTitle = "The Mandalorian",
+                    title = "Pulp Fiction",
+                    originalTitle = "Pulp Fiction",
                     imageUrl = null,
-                    years = null,
                     genre = emptyList(),
                     plot = null,
                     cast = emptyList(),
@@ -340,7 +343,7 @@ fun TvShowMediaDetailContentPreview() {
                         id = "",
                         orderNumber = 1,
                         title = "Season 1",
-                        year = null,
+                        year = "1998",
                         directors = emptyList(),
                         writer = emptyList(),
                         cast = emptyList(),
@@ -349,7 +352,24 @@ fun TvShowMediaDetailContentPreview() {
                         imageUrl = null,
                     )
                 ),
-                selectedSeasonIndex = 0
+                selectedSeasonIndex = 0,
+                episodes = listOf(
+                    TvShowEpisode(
+                        id = "123",
+                        orderNumber = 1,
+                        title = "Episode 1",
+                        year = null,
+                        directors = listOf("Quentin Tarantino"),
+                        writer = emptyList(),
+                        cast = listOf("John Travolta"),
+                        genre = listOf("Action"),
+                        plot = null,
+                        imageUrl = null,
+                        thumbImageUrl = null,
+                        duration = 1200,
+                        progress = MediaProgress(100, false)
+                    )
+                ),
             )
         )
     }
