@@ -39,14 +39,12 @@ class PlayerViewModel @Inject constructor(
 
     private val playStreamParams = MutableStateFlow<PlayStreamParams?>(null)
 
-
     @OptIn(FlowPreview::class)
     private val currentVideoProgress = MutableSharedFlow<VideoProgress>().apply {
         debounce(500.milliseconds)
             .onEach { videoProgress ->
                 playStreamParams.value?.watchHistoryId?.let {
                     updateWatchHistoryOnVideoProgress(it, videoProgress.progress, videoProgress.totalDuration)
-
                 }
             }
             .launchIn(viewModelScope)
