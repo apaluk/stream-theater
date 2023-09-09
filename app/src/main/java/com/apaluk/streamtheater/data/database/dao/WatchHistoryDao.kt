@@ -56,11 +56,9 @@ interface WatchHistoryDao {
     suspend fun getStreamIdent(streamId: Long): String?
 
     @Query("""
-        SELECT *
-        FROM watchHistory AS wh1
+        SELECT * FROM watchHistory AS wh1
         WHERE lastUpdate = (
-            SELECT MAX(lastUpdate)
-            FROM watchHistory AS wh2
+            SELECT MAX(lastUpdate) FROM watchHistory AS wh2
             WHERE wh1.mediaId = wh2.mediaId
         )
         ORDER BY lastUpdate DESC
