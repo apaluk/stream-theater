@@ -7,8 +7,9 @@
     <string name="st_login_username">User name</string>
     <string name="st_login_password">Password</string>
     <string name="st_login_positive_button">Login</string>
-    <string name="st_login_welcome">Welcome!</string>
+    <string name="st_login_welcome">Welcome to\nStream Theater</string>
     <string name="st_login_instructions">Please log in with your VIP webshare.cz account.</string>
+    <string name="st_login_error_username_or_password_empty">Username and password cannot be empty</string>
 
     <string name="st_default_empty_state">No data.</string>
     <string name="st_default_error_state">Something went wrong</string>

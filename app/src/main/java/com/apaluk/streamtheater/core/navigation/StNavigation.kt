@@ -19,9 +19,7 @@ fun NavGraphBuilder.loginScreen(
     composable(
         route = StDestinations.LOGIN_ROUTE
     ) {
-        LoginScreen(
-            onLoggedIn = onLoggedIn
-        )
+        LoginScreen(onNavigateToDashboard = onLoggedIn)
     }
 }
 

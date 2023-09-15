@@ -1,30 +1,41 @@
 package com.apaluk.streamtheater.ui.media
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.apaluk.streamtheater.core.util.SingleEvent
+import com.apaluk.streamtheater.ui.common.viewmodel.BaseViewModel
 import com.apaluk.streamtheater.ui.media.media_detail.PlayStreamParams
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MediaViewModel @Inject constructor(
+class MediaViewModel @Inject constructor(): BaseViewModel<Unit, MediaEvent, MediaAction>() {
 
-): ViewModel() {
+    override val initialState: Unit = Unit
 
     val playStreamParams = MutableStateFlow<PlayStreamParams?>(null)
 
-    val skipToPreviousVideoEvent = SingleEvent<Unit>()
-    val skipToNextVideoEvent = SingleEvent<Unit>()
-
-    fun skipToPreviousVideo() {
-        viewModelScope.launch { skipToPreviousVideoEvent.emit(Unit) }
-    }
-    fun skipToNextVideo() {
-        viewModelScope.launch { skipToNextVideoEvent.emit(Unit) }
+    override fun handleAction(action: MediaAction) {
+        when(action) {
+            MediaAction.SkipToPreviousVideo -> onSkipToPreviousVideo()
+            MediaAction.SkipToNextVideo -> onSkipToNextVideo()
+        }
     }
 
+    private fun onSkipToPreviousVideo() {
+        emitEvent(MediaEvent.SkipToPreviousVideo)
+    }
+
+    private fun onSkipToNextVideo() {
+        emitEvent(MediaEvent.SkipToNextVideo)
+    }
+}
+
+sealed class MediaEvent {
+    object SkipToPreviousVideo: MediaEvent()
+    object SkipToNextVideo: MediaEvent()
+}
+
+sealed class MediaAction {
+    object SkipToPreviousVideo: MediaAction()
+    object SkipToNextVideo: MediaAction()
 }
 

@@ -11,7 +11,6 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -27,13 +26,15 @@ import com.apaluk.streamtheater.domain.model.search.SearchResultItem
 import com.apaluk.streamtheater.ui.common.composable.MediaTitle
 import com.apaluk.streamtheater.ui.theme.StTheme
 import com.apaluk.streamtheater.R
+import com.apaluk.streamtheater.ui.common.composable.EventHandler
+import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun SearchResults(
     results: List<SearchResultItem>,
     modifier: Modifier = Modifier,
     onResultClicked: (String) -> Unit,
-    scrollToTop: Boolean
+    scrollToTopEvent: Flow<SearchScreenEvent.ScrollListToTop>
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
@@ -52,10 +53,8 @@ fun SearchResults(
             )
         }
     }
-    LaunchedEffect(scrollToTop) {
-        if(scrollToTop) {
-            listState.scrollToItem(0)
-        }
+    EventHandler(scrollToTopEvent) {
+        listState.scrollToItem(0)
     }
 }
 

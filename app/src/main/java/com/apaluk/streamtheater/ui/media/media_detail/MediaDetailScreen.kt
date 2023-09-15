@@ -14,15 +14,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import com.apaluk.streamtheater.core.util.exhaustive
 import com.apaluk.streamtheater.domain.model.media.*
 import com.apaluk.streamtheater.ui.common.composable.BackButton
-import com.apaluk.streamtheater.ui.common.composable.OnLifecycleEvent
+import com.apaluk.streamtheater.ui.common.composable.EventHandler
 import com.apaluk.streamtheater.ui.common.composable.ProgressBarDialog
-import com.apaluk.streamtheater.ui.common.composable.SingleEventHandler
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
 import com.apaluk.streamtheater.ui.common.util.UiState
+import com.apaluk.streamtheater.ui.media.MediaEvent
 import com.apaluk.streamtheater.ui.media.MediaViewModel
 import com.apaluk.streamtheater.ui.media.media_detail.movie.MovieMediaDetailContent
 import com.apaluk.streamtheater.ui.media.media_detail.streams.MediaDetailStreams
@@ -48,24 +46,21 @@ fun MediaDetailScreen(
         MediaDetailScreenContent(
             modifier = modifier,
             uiState = uiState,
-            onMediaDetailAction = viewModel::onMediaDetailAction
+            onMediaDetailAction = viewModel::onAction
         )
     }
-    SingleEventHandler(uiState.playStreamEvent) { params ->
-        mediaViewModel.playStreamParams.value = params
-        onPlayStream()
+    EventHandler(viewModel.event) { event ->
+        when (event) {
+            is MediaDetailEvent.PlayStream -> {
+                mediaViewModel.playStreamParams.value = event.params
+                onPlayStream()
+            }
+        }
     }
-    SingleEventHandler(mediaViewModel.skipToPreviousVideoEvent) {
-        viewModel.onMediaDetailAction(MediaDetailAction.SkipToPreviousVideo)
-    }
-    SingleEventHandler(mediaViewModel.skipToNextVideoEvent) {
-        viewModel.onMediaDetailAction(MediaDetailAction.SkipToNextVideo)
-    }
-    OnLifecycleEvent { _, event ->
-        when(event) {
-            Lifecycle.Event.ON_PAUSE -> viewModel.onMediaDetailAction(MediaDetailAction.ScreenVisibilityChanged(false))
-            Lifecycle.Event.ON_RESUME -> viewModel.onMediaDetailAction(MediaDetailAction.ScreenVisibilityChanged(true))
-            else -> {}
+    EventHandler(mediaViewModel.event) { event ->
+        when (event) {
+            is MediaEvent.SkipToNextVideo -> viewModel.onAction(MediaDetailAction.SkipToNextVideo)
+            is MediaEvent.SkipToPreviousVideo -> viewModel.onAction(MediaDetailAction.SkipToPreviousVideo)
         }
     }
 }
@@ -136,7 +131,7 @@ fun MediaDetailContent(
             onMediaDetailAction = onMediaDetailAction,
             modifier = modifier
         )
-    }.exhaustive
+    }
 }
 
 @Preview(device = "spec:width=1600dp,height=800dp,orientation=landscape")

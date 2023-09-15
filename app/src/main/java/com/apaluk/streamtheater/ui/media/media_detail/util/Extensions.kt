@@ -19,8 +19,6 @@ import com.apaluk.streamtheater.ui.media.media_detail.MovieMediaDetailUiState
 import com.apaluk.streamtheater.ui.media.media_detail.StreamsUiState
 import com.apaluk.streamtheater.ui.media.media_detail.TvShowMediaDetailUiState
 import com.apaluk.streamtheater.ui.media.media_detail.tv_show.TvShowPosterData
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 
 private const val MEDIA_INFO_SEPARATOR = "  ${Constants.CHAR_BULLET}  "
 
@@ -53,14 +51,6 @@ val MediaProgress.isInProgress: Boolean
 
 val MediaDetailScreenUiState.tvShowUiState: TvShowMediaDetailUiState?
     get() = (mediaDetailUiState as? TvShowMediaDetailUiState)
-
-fun MutableStateFlow<MediaDetailScreenUiState>.updateTvShowUiState(updateTvShowUiState: (TvShowMediaDetailUiState) -> TvShowMediaDetailUiState) {
-    value.tvShowUiState?.let {
-        update { mediaDetailUiState ->
-            mediaDetailUiState.copy(mediaDetailUiState = updateTvShowUiState(it))
-        }
-    }
-}
 
 fun TvShowMediaDetailUiState.selectedSeason(): TvShowSeason? =
     if (selectedSeasonIndex != null

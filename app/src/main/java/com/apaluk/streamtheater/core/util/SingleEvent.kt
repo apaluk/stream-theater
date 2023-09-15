@@ -1,6 +1,7 @@
 package com.apaluk.streamtheater.core.util
 
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.CONFLATED
 import kotlinx.coroutines.flow.receiveAsFlow
 
 /**
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
  */
 class SingleEvent<T> {
 
-    private val channel = Channel<T>()
+    private val channel = Channel<T>(CONFLATED)
 
     val flow
         get() = channel.receiveAsFlow()

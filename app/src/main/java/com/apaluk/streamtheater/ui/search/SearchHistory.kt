@@ -40,11 +40,14 @@ fun SearchHistoryItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                onSearchScreenAction(SearchScreenAction.SearchTextChanged(
-                    text = text,
-                    moveSearchCursorToEnd = true,
-                    triggerSearch = true
-                ))
+                val newText = "${text.trim()} "
+                onSearchScreenAction(
+                    SearchScreenAction.SearchTextChanged(
+                        text = newText,
+                        cursorPosition = newText.length,
+                        triggerSearch = true
+                    )
+                )
             }
             .padding(horizontal = 64.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -77,11 +80,15 @@ fun SearchHistoryItem(
                 .padding(vertical = 4.dp, horizontal = 8.dp)
                 .size(48.dp)
                 .clip(MaterialTheme.shapes.large)
-                .clickable { onSearchScreenAction(SearchScreenAction.SearchTextChanged(
-                    text = text,
-                    moveSearchCursorToEnd = true)
-                ) },
-
+                .clickable {
+                    val newText = "${text.trim()} "
+                    onSearchScreenAction(
+                        SearchScreenAction.SearchTextChanged(
+                            text = newText,
+                            cursorPosition = newText.length,
+                        )
+                    )
+                },
             contentAlignment = Alignment.Center
         ) {
             Image(

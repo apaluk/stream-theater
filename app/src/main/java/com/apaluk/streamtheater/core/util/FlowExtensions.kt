@@ -62,11 +62,7 @@ fun <D, R, K> repositoryFlow(
         else {
             val response = apiOperation.invoke()
             if (!response.isSuccessful) {
-                emitError(
-                    "Response: code=${response.code()} error=${
-                        response.errorBody()?.string()
-                    }"
-                )
+                emitError("Response: code=${response.code()} error=${response.errorBody()?.string()}")
                 return@flow
             }
             val body = response.body() ?: run {

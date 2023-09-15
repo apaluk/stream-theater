@@ -11,7 +11,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -32,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.apaluk.streamtheater.R
 import com.apaluk.streamtheater.ui.common.composable.StButton
 import com.apaluk.streamtheater.ui.common.composable.TextFieldWithHeader
+import com.apaluk.streamtheater.ui.common.composable.EventHandler
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.theme.StTheme
@@ -39,19 +39,18 @@ import com.apaluk.streamtheater.ui.theme.StTheme
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    onLoggedIn: () -> Unit = {},
+    onNavigateToDashboard: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     LoginScreenContent(
         uiState = uiState,
-        onLoginScreenAction = viewModel::onLoginScreenAction,
+        onLoginScreenAction = viewModel::onAction,
         modifier = modifier
     )
-    LaunchedEffect(uiState.loggedIn) {
-        if(uiState.loggedIn) {
-            viewModel.onLoginScreenAction(LoginScreenAction.OnLoggedIn)
-            onLoggedIn()
+    EventHandler(viewModel.event) { event ->
+        when (event) {
+            is LoginEvent.NavigateToDashboard -> onNavigateToDashboard()
         }
     }
 }
@@ -60,7 +59,7 @@ fun LoginScreen(
 fun LoginScreenContent(
     uiState: LoginUiState,
     modifier: Modifier = Modifier,
-    onLoginScreenAction: (LoginScreenAction) -> Unit = {}
+    onLoginScreenAction: (LoginAction) -> Unit = {}
 ) {
     UiStateAnimator(uiState = uiState.uiState) {
         LoginScreenForm(
@@ -75,7 +74,7 @@ fun LoginScreenContent(
 fun LoginScreenForm(
     uiState: LoginUiState,
     modifier: Modifier = Modifier,
-    onLoginScreenAction: (LoginScreenAction) -> Unit
+    onLoginScreenAction: (LoginAction) -> Unit
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
@@ -94,9 +93,9 @@ fun LoginScreenForm(
             Text(
                 modifier = modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 24.dp),
+                    .padding(horizontal = 16.dp, vertical = 24.dp),
                 text = stringResourceSafe(id = R.string.st_login_welcome),
-                style = MaterialTheme.typography.displayLarge,
+                style = MaterialTheme.typography.displaySmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.SemiBold
@@ -104,9 +103,9 @@ fun LoginScreenForm(
             Text(
                 modifier = modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 32.dp),
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
                 text = stringResourceSafe(id = R.string.st_login_instructions),
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -115,16 +114,16 @@ fun LoginScreenForm(
                 header = stringResourceSafe(id = R.string.st_login_username),
                 editText = uiState.userName,
                 onTextChanged = {
-                    onLoginScreenAction(LoginScreenAction.UpdateUsername(it))
+                    onLoginScreenAction(LoginAction.UpdateUsername(it))
                 },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
             Spacer(modifier = modifier.height(16.dp))
             TextFieldWithHeader(
-                header = stringResourceSafe(id = com.apaluk.streamtheater.R.string.st_login_password),
+                header = stringResourceSafe(id = R.string.st_login_password),
                 editText = uiState.password,
                 onTextChanged =  {
-                    onLoginScreenAction(LoginScreenAction.UpdatePassword(it))
+                    onLoginScreenAction(LoginAction.UpdatePassword(it))
                 },
                 modifier = Modifier.testTag("login:password"),
                 keyboardOptions = KeyboardOptions(
@@ -134,7 +133,7 @@ fun LoginScreenForm(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         keyboardController?.hide()
-                        onLoginScreenAction(LoginScreenAction.TriggerLogin)
+                        onLoginScreenAction(LoginAction.LoginButtonClicked)
                     }
                 ),
                 visualTransformation = PasswordVisualTransformation()
@@ -144,10 +143,11 @@ fun LoginScreenForm(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 StButton(
-                    onClick = { onLoginScreenAction(LoginScreenAction.TriggerLogin) },
-                    text = stringResourceSafe(id = com.apaluk.streamtheater.R.string.st_login_positive_button)
+                    onClick = { onLoginScreenAction(LoginAction.LoginButtonClicked) },
+                    text = stringResourceSafe(id = R.string.st_login_positive_button),
+                    enabled = uiState.isLoggingIn.not(),
                 )
-                if(uiState.loggingIn) {
+                if(uiState.isLoggingIn) {
                     Spacer(modifier = Modifier.width(32.dp))
                     CircularProgressIndicator(
                         modifier = Modifier
@@ -185,7 +185,7 @@ private fun BasicPreview() {
             uiState = LoginUiState(
                 userName = "apaluk",
                 password = "nbusr123",
-                loggingIn = true,
+                isLoggingIn = false,
                 errorMessage = "Something went wrong!"
             ),
             onLoginScreenAction = {}

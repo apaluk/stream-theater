@@ -42,6 +42,7 @@ import com.apaluk.streamtheater.R
 import com.apaluk.streamtheater.core.util.Constants
 import com.apaluk.streamtheater.core.util.millisToSeconds
 import com.apaluk.streamtheater.ui.common.composable.*
+import com.apaluk.streamtheater.ui.media.MediaAction
 import com.apaluk.streamtheater.ui.media.MediaViewModel
 import com.apaluk.streamtheater.ui.media.media_detail.util.PlayerMediaInfo
 import com.apaluk.streamtheater.ui.theme.videoPlayerControl
@@ -56,21 +57,24 @@ fun PlayerScreen(
     mediaViewModel: MediaViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    SingleEventHandler(uiState.navigateUpEvent) {
-        onNavigateUp()
+    EventHandler(viewModel.event) { event ->
+        when (event) {
+            is PlayerScreenEvent.NavigateUp -> onNavigateUp()
+        }
     }
     UiStateAnimator(uiState = uiState.uiState) {
-        uiState.videoUrl?.let {
+        uiState.videoUrl?.let { videoUrl ->
             VideoPlayer(
-                uri = Uri.parse(it),
+                uri = Uri.parse(videoUrl),
                 uiState = uiState,
-                onPlayerScreenAction = viewModel::onPlayerScreenAction,
+                onPlayerScreenAction = viewModel::onAction,
+                seekToPosition = uiState.seekToPosition,
                 onSkipToPreviousVideo = {
-                    mediaViewModel.skipToPreviousVideo()
+                    mediaViewModel.onAction(MediaAction.SkipToPreviousVideo)
                     onNavigateUp()
                 },
                 onSkipToNextVideo = {
-                    mediaViewModel.skipToNextVideo()
+                    mediaViewModel.onAction(MediaAction.SkipToNextVideo)
                     onNavigateUp()
                 }
             )
@@ -88,8 +92,9 @@ fun PlayerScreen(
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 fun VideoPlayer(
     uri: Uri,
-    uiState: PlayerScreenState,
+    uiState: PlayerScreenUiState,
     onPlayerScreenAction: (PlayerScreenAction) -> Unit,
+    seekToPosition: Long? = null,
     onSkipToPreviousVideo: () -> Unit = {},
     onSkipToNextVideo: () -> Unit = {}
 ) {
@@ -192,9 +197,11 @@ fun VideoPlayer(
             else -> {}
         }
     }
-    SingleEventHandler(uiState.startFromPositionEvent) {
-        exoPlayer.seekTo(TimeUnit.SECONDS.toMillis(it.toLong()))
-        exoPlayer.playWhenReady = true
+    if (seekToPosition != null) {
+        LaunchedEffect(seekToPosition) {
+            exoPlayer.seekTo(TimeUnit.SECONDS.toMillis(seekToPosition))
+            exoPlayer.playWhenReady = true
+        }
     }
 
     // if player stops, update progress
@@ -224,7 +231,7 @@ fun BlackVideoPlayerBackground() {
 
 @Composable
 fun VideoPlayerOverlay(
-    uiState: PlayerScreenState,
+    uiState: PlayerScreenUiState,
     onSkipToPrevious: () -> Unit = {},
     onSkipToNext: () -> Unit = {},
 ) {

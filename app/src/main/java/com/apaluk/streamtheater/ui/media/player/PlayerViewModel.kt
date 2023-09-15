@@ -1,20 +1,18 @@
 package com.apaluk.streamtheater.ui.media.player
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.apaluk.streamtheater.core.util.SingleEvent
 import com.apaluk.streamtheater.domain.use_case.media.GetStartFromPositionUseCase
 import com.apaluk.streamtheater.domain.use_case.media.UpdateWatchHistoryOnVideoProgressUseCase
 import com.apaluk.streamtheater.domain.use_case.webshare.GetFileLinkUseCase
 import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.common.util.toUiState
+import com.apaluk.streamtheater.ui.common.viewmodel.BaseViewModel
 import com.apaluk.streamtheater.ui.media.media_detail.PlayStreamParams
 import com.apaluk.streamtheater.ui.media.media_detail.util.PlayerMediaInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNotNull
@@ -22,7 +20,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -32,10 +29,9 @@ class PlayerViewModel @Inject constructor(
     getFileLink: GetFileLinkUseCase,
     private val updateWatchHistoryOnVideoProgress: UpdateWatchHistoryOnVideoProgressUseCase,
     getStartFromPosition: GetStartFromPositionUseCase,
-): ViewModel() {
+): BaseViewModel<PlayerScreenUiState, PlayerScreenEvent, PlayerScreenAction>() {
 
-    private val _uiState = MutableStateFlow(PlayerScreenState())
-    val uiState = _uiState.asStateFlow()
+    override val initialState: PlayerScreenUiState = PlayerScreenUiState()
 
     private val playStreamParams = MutableStateFlow<PlayStreamParams?>(null)
 
@@ -53,11 +49,11 @@ class PlayerViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             playStreamParams.filterNotNull().collect { params ->
-                _uiState.update { it.copy(playerMediaInfo = params.mediaInfo) }
+                emitUiState { it.copy(playerMediaInfo = params.mediaInfo) }
 
                 // get video file link
                 getFileLink(params.ident).map { resource ->
-                    _uiState.update {
+                    emitUiState {
                         it.copy(
                             uiState = resource.toUiState(),
                             videoUrl = resource.data,
@@ -65,7 +61,8 @@ class PlayerViewModel @Inject constructor(
                     }
                 }.collect()
                 // seek video to last watched position
-                _uiState.value.startFromPositionEvent.emit(getStartFromPosition(params.watchHistoryId))
+                val startFromPosition = getStartFromPosition(params.watchHistoryId).toLong()
+                emitUiState { it.copy(seekToPosition = startFromPosition) }
             }
         }
     }
@@ -74,11 +71,11 @@ class PlayerViewModel @Inject constructor(
         if(params != null)
             playStreamParams.value = params
         else
-            _uiState.update { it.copy(uiState = UiState.Error()) }  // this should not happen
+            emitUiState { it.copy(uiState = UiState.Error()) }  // this should not happen
             // TODO log error to firebase
     }
 
-    fun onPlayerScreenAction(action: PlayerScreenAction) {
+    override fun handleAction(action: PlayerScreenAction) {
         when(action) {
             PlayerScreenAction.VideoEnded -> onVideoEnded()
             is PlayerScreenAction.VideoProgressChanged -> onVideoProgressChanged(action)
@@ -87,9 +84,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun onVideoEnded() {
-        viewModelScope.launch {
-            _uiState.value.navigateUpEvent.emit(Unit)
-        }
+        emitEvent(PlayerScreenEvent.NavigateUp)
     }
 
     private fun onVideoProgressChanged(action: PlayerScreenAction.VideoProgressChanged) {
@@ -104,24 +99,27 @@ class PlayerViewModel @Inject constructor(
                 .filterNotNull()
                 .first()
                 .showNextPrevControls && action.visible
-            _uiState.update { it.copy(showNextPrevButtons = shouldShowNextPrevButtons) }
+            emitUiState { it.copy(showNextPrevButtons = shouldShowNextPrevButtons) }
         }
     }
 }
 
-data class PlayerScreenState(
+data class PlayerScreenUiState(
     val uiState: UiState = UiState.Loading,
     val videoUrl: String? = null,
     val showNextPrevButtons: Boolean = false,
     val playerMediaInfo: PlayerMediaInfo? = null,
-    val navigateUpEvent: SingleEvent<Unit> = SingleEvent(),
-    val startFromPositionEvent: SingleEvent<Int> = SingleEvent()
+    val seekToPosition: Long? = null,
 )
 
 sealed class PlayerScreenAction {
     object VideoEnded: PlayerScreenAction()
     data class VideoProgressChanged(val progress: VideoProgress): PlayerScreenAction()
     data class PlayerControlsVisibilityChanged(val visible: Boolean): PlayerScreenAction()
+}
+
+sealed class PlayerScreenEvent {
+    object NavigateUp: PlayerScreenEvent()
 }
 
 data class VideoProgress(

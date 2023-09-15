@@ -5,7 +5,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.apaluk.streamtheater.R
 import com.apaluk.streamtheater.ui.common.util.UiState
-import com.apaluk.streamtheater.ui.login.LoginScreenAction
+import com.apaluk.streamtheater.ui.login.LoginAction
 import com.apaluk.streamtheater.ui.login.LoginScreenContent
 import com.apaluk.streamtheater.ui.login.LoginUiState
 import com.google.common.truth.Truth.assertThat
@@ -68,7 +68,7 @@ class LoginScreenTest {
                     uiState = UiState.Content
                 ),
                 onLoginScreenAction = { action ->
-                    assertThat(action).isEqualTo(LoginScreenAction.TriggerLogin)
+                    assertThat(action).isEqualTo(LoginAction.LoginButtonClicked)
                     loginTriggered = true
                 }
             )

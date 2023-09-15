@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.apaluk.streamtheater.R
-import com.apaluk.streamtheater.ui.common.composable.SingleEventHandler
+import com.apaluk.streamtheater.ui.common.composable.EventHandler
 import com.apaluk.streamtheater.ui.common.composable.TopAppBarAction
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.theme.StTheme
@@ -44,15 +44,15 @@ fun DashboardScreen(
             DashboardContent(
                 modifier = modifier.padding(padding),
                 uiState = uiState,
-                onDashboardAction = viewModel::onDashboardAction
+                onDashboardAction = viewModel::onAction
             )
         }
     )
-    SingleEventHandler(uiState.navigateToMediaDetailEvent) {
-        onNavigateToMediaDetail(it)
-    }
-    SingleEventHandler(uiState.navigateToSearchEvent) {
-        onNavigateToSearch()
+    EventHandler(viewModel.event) { event ->
+        when (event) {
+            is DashboardEvent.NavigateToMediaDetail -> onNavigateToMediaDetail(event.mediaId)
+            is DashboardEvent.NavigateToSearch -> onNavigateToSearch()
+        }
     }
 }
 

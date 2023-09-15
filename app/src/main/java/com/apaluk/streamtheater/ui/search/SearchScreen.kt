@@ -21,12 +21,10 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -42,13 +40,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.apaluk.streamtheater.R
+import com.apaluk.streamtheater.core.util.SingleEvent
 import com.apaluk.streamtheater.ui.common.composable.BackButton
 import com.apaluk.streamtheater.ui.common.composable.DefaultEmptyState
+import com.apaluk.streamtheater.ui.common.composable.EventHandler
 import com.apaluk.streamtheater.ui.common.composable.StButton
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.theme.StTheme
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 fun SearchScreen(
@@ -57,19 +58,27 @@ fun SearchScreen(
     onNavigateToMediaDetail: (String) -> Unit = {},
     viewModel: SearchViewModel = hiltViewModel()
 ) {
-    val uiState = viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+
+    // is there a better way to send events to child composables?
+    val scrollListToTopFlow = remember { SingleEvent<SearchScreenEvent.ScrollListToTop>() }
+    val showKeyboardFlow = remember { SingleEvent<SearchScreenEvent.ShowKeyboard>() }
+
+    EventHandler(viewModel.event) { event ->
+        when (event) {
+            is SearchScreenEvent.SelectMedia -> onNavigateToMediaDetail(event.mediaId)
+            is SearchScreenEvent.ScrollListToTop -> scrollListToTopFlow.emit(event)
+            is SearchScreenEvent.ShowKeyboard -> showKeyboardFlow.emit(event)
+        }
+    }
     SearchScreenContent(
         modifier = modifier,
-        uiState = uiState.value,
-        onSearchScreenAction = viewModel::onSearchScreenAction,
-        onBack = { onNavigateUp() }
+        uiState = uiState,
+        onSearchScreenAction = viewModel::onAction,
+        onBack = { onNavigateUp() },
+        showKeyboardEvent = showKeyboardFlow.flow,
+        scrollListToTopEvent = scrollListToTopFlow.flow
     )
-    LaunchedEffect(uiState.value.selectedMediaId) {
-        uiState.value.selectedMediaId?.let {
-            onNavigateToMediaDetail(it)
-        }
-        viewModel.onSearchScreenAction(SearchScreenAction.MediaSelected(null))
-    }
 }
 
 @Composable
@@ -77,9 +86,11 @@ private fun SearchScreenContent(
     modifier: Modifier = Modifier,
     uiState: SearchUiState,
     onSearchScreenAction: (SearchScreenAction) -> Unit,
+    showKeyboardEvent: Flow<SearchScreenEvent.ShowKeyboard>,
+    scrollListToTopEvent: Flow<SearchScreenEvent.ScrollListToTop>,
     onBack: () -> Unit
 ) {
-    val toolbarHeight by remember { mutableStateOf(82.dp) }
+    val toolbarHeight = 82.dp
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -95,7 +106,8 @@ private fun SearchScreenContent(
                     SearchBar(
                         modifier = Modifier.height(toolbarHeight),
                         uiState = uiState,
-                        onSearchScreenAction = onSearchScreenAction
+                        onSearchScreenAction = onSearchScreenAction,
+                        showKeyboardEvent = showKeyboardEvent
                     )
                 }
             )
@@ -123,7 +135,7 @@ private fun SearchScreenContent(
                     modifier = Modifier.padding(paddingValues),
                     results = uiState.searchResults,
                     onResultClicked = { onSearchScreenAction(SearchScreenAction.MediaSelected(it)) },
-                    scrollToTop = uiState.scrollListToTop
+                    scrollToTopEvent = scrollListToTopEvent
                 )
             }
         }
@@ -134,28 +146,16 @@ private fun SearchScreenContent(
 fun SearchBar(
     uiState: SearchUiState,
     onSearchScreenAction: (SearchScreenAction) -> Unit,
+    showKeyboardEvent: Flow<SearchScreenEvent.ShowKeyboard>,
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
-    var textFieldValue by remember {
-        mutableStateOf(TextFieldValue(text = uiState.searchText))
+    val textFieldValue by remember(uiState.searchInput) {
+        mutableStateOf(uiState.searchInput.toTextFieldValue())
     }
-    LaunchedEffect(Unit) {
-        uiState.moveSearchFieldCursorToTheEndEvent.flow.collectLatest {
-            textFieldValue = TextFieldValue(
-                selection = TextRange(it.length),
-                text = it
-            )
-        }
-    }
-    LaunchedEffect(Unit) {
-        uiState.showKeyboardEvent.flow.collectLatest { show ->
-            if(show)
-                focusRequester.requestFocus()
-            else
-                keyboardController?.hide()
-        }
+    EventHandler(showKeyboardEvent) {
+        if(it.show) focusRequester.requestFocus() else keyboardController?.hide()
     }
     Row(
         modifier = modifier
@@ -176,8 +176,7 @@ fun SearchBar(
                 containerColor = MaterialTheme.colorScheme.background
             ),
             onValueChange = {
-                onSearchScreenAction(SearchScreenAction.SearchTextChanged(it.text))
-                textFieldValue = it
+                onSearchScreenAction(SearchScreenAction.SearchTextChanged(it.text, it.selection.start))
             },
             leadingIcon = {
                 Icon(
@@ -186,7 +185,7 @@ fun SearchBar(
                 )
             },
             trailingIcon = {
-                if(uiState.searchText.isNotEmpty()) {
+                if(uiState.searchInput.text.isNotEmpty()) {
                     Icon(
                         modifier = Modifier
                             .clickable {
@@ -220,11 +219,17 @@ fun SearchBar(
             onClick = {
                 onSearchScreenAction(SearchScreenAction.TriggerSearch)
             },
-            enabled = uiState.searchText.isNotBlank(),
+            enabled = uiState.searchInput.text.isNotBlank(),
             textStyle = MaterialTheme.typography.bodyLarge
         )
     }
 }
+
+fun TextFieldInput.toTextFieldValue(): TextFieldValue =
+    TextFieldValue(
+        text = text,
+        selection = TextRange(cursorPosition)
+    )
 
 @Preview
 @Composable
@@ -233,7 +238,9 @@ fun SearchScreenPreview() {
         SearchScreenContent(
             uiState = SearchUiState(),
             onSearchScreenAction = {},
-            onBack = {}
+            onBack = {},
+            showKeyboardEvent = emptyFlow(),
+            scrollListToTopEvent = emptyFlow()
         )
     }
 }

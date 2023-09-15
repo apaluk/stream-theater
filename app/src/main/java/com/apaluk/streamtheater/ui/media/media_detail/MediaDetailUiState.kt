@@ -1,6 +1,5 @@
 package com.apaluk.streamtheater.ui.media.media_detail
 
-import com.apaluk.streamtheater.core.util.SingleEvent
 import com.apaluk.streamtheater.domain.model.media.MediaDetailMovie
 import com.apaluk.streamtheater.domain.model.media.MediaDetailTvShow
 import com.apaluk.streamtheater.domain.model.media.MediaStream
@@ -15,7 +14,6 @@ data class MediaDetailScreenUiState(
     val mediaDetailUiState: MediaDetailUiState? = null,
     val streamsUiState: StreamsUiState? = null,
     val showSeekingProgressBar: Boolean = false,
-    val playStreamEvent: SingleEvent<PlayStreamParams> = SingleEvent()
 )
 
 sealed class MediaDetailUiState
@@ -41,7 +39,6 @@ sealed class MediaDetailAction {
     data class SelectTvShowEpisode(val episodeIndex: Int): MediaDetailAction()
     object SkipToPreviousVideo: MediaDetailAction()
     object SkipToNextVideo: MediaDetailAction()
-    data class ScreenVisibilityChanged(val isVisible: Boolean): MediaDetailAction()
 }
 
 data class StreamsUiState(
@@ -55,3 +52,7 @@ data class PlayStreamParams(
     val mediaInfo: PlayerMediaInfo?,
     val showNextPrevControls: Boolean
 )
+
+sealed class MediaDetailEvent {
+    data class PlayStream(val params: PlayStreamParams): MediaDetailEvent()
+}
