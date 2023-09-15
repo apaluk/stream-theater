@@ -11,12 +11,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.apaluk.streamtheater.R
+import com.apaluk.streamtheater.domain.model.dashboard.DashboardMedia
 import com.apaluk.streamtheater.ui.common.composable.EventHandler
 import com.apaluk.streamtheater.ui.common.composable.TopAppBarAction
+import com.apaluk.streamtheater.ui.common.util.PreviewDevices
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.theme.StTheme
 
@@ -91,12 +92,45 @@ private fun DashboardContent(
     }
 }
 
-@Preview
+@PreviewDevices
 @Composable
 fun DashboardPreview() {
     StTheme {
         DashboardContent(
-            uiState = DashboardUiState(),
+            uiState = DashboardUiState(
+                continueWatchingMediaList = listOf(
+                    DashboardMedia(
+                        mediaId = "1",
+                        title = "The Witcher",
+                        imageUrl = "https://static.wikia.nocookie.net/witcher/images/4/4f/Tw3_journal_geralt.png/revision/latest?cb=20160525164048",
+                    ),
+                    DashboardMedia(
+                        mediaId = "2",
+                        title = "The Witcher",
+                        imageUrl = "https://static.wikia.nocookie.net/witcher/images/4/4f/Tw3_journal_geralt.png/revision/latest?cb=20160525164048",
+                    ),
+                    DashboardMedia(
+                        mediaId = "3",
+                        title = "The Witcher",
+                        imageUrl = "https://static.wikia.nocookie.net/witcher/images/4/4f/Tw3_journal_geralt.png/revision/latest?cb=20160525164048",
+                    ),
+                    DashboardMedia(
+                        mediaId = "4",
+                        title = "The Witcher",
+                        imageUrl = "https://static.wikia.nocookie.net/witcher/images/4/4f/Tw3_journal_geralt.png/revision/latest?cb=20160525164048",
+                    ),
+                    DashboardMedia(
+                        mediaId = "5",
+                        title = "The Witcher",
+                        imageUrl = "https://static.wikia.nocookie.net/witcher/images/4/4f/Tw3_journal_geralt.png/revision/latest?cb=20160525164048",
+                    ),
+                    DashboardMedia(
+                        mediaId = "6",
+                        title = "The Witcher",
+                        imageUrl = "https://static.wikia.nocookie.net/witcher/images/4/4f/Tw3_journal_geralt.png/revision/latest?cb=20160525164048",
+                    ),
+                )
+            ),
         )
     }
 }

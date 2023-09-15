@@ -25,14 +25,14 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.apaluk.streamtheater.R
+import com.apaluk.streamtheater.ui.common.composable.EventHandler
 import com.apaluk.streamtheater.ui.common.composable.StButton
 import com.apaluk.streamtheater.ui.common.composable.TextFieldWithHeader
-import com.apaluk.streamtheater.ui.common.composable.EventHandler
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
+import com.apaluk.streamtheater.ui.common.util.PreviewDevices
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.theme.StTheme
 
@@ -91,9 +91,7 @@ fun LoginScreenForm(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 24.dp),
+                modifier = modifier.fillMaxWidth(),
                 text = stringResourceSafe(id = R.string.st_login_welcome),
                 style = MaterialTheme.typography.displaySmall,
                 textAlign = TextAlign.Center,
@@ -176,7 +174,7 @@ fun LoginScreenForm(
     }
 }
 
-@Preview
+@PreviewDevices
 @Composable
 private fun BasicPreview() {
     StTheme {

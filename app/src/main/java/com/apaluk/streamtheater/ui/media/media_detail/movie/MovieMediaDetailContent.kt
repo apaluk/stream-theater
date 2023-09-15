@@ -1,7 +1,13 @@
 package com.apaluk.streamtheater.ui.media.media_detail.movie
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -12,23 +18,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.apaluk.streamtheater.R
+import com.apaluk.streamtheater.domain.model.media.MediaDetailMovie
 import com.apaluk.streamtheater.ui.common.composable.MediaTitle
+import com.apaluk.streamtheater.ui.common.util.PreviewDevices
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
-import com.apaluk.streamtheater.ui.media.media_detail.common.CrewMembers
 import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailAction
-import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailScreenUiState
 import com.apaluk.streamtheater.ui.media.media_detail.MovieMediaDetailUiState
+import com.apaluk.streamtheater.ui.media.media_detail.common.CrewMembers
 import com.apaluk.streamtheater.ui.media.media_detail.common.MediaDetailPoster
 import com.apaluk.streamtheater.ui.media.media_detail.common.StColors
 import com.apaluk.streamtheater.ui.media.media_detail.util.generalInfoText
 import com.apaluk.streamtheater.ui.media.media_detail.util.isInProgress
 import com.apaluk.streamtheater.ui.media.media_detail.util.relativeProgress
-import com.apaluk.streamtheater.R
+import com.apaluk.streamtheater.ui.theme.StTheme
 
 @Composable
 fun MovieMediaDetailContent(
-    screenUiState: MediaDetailScreenUiState,
     movieUiState: MovieMediaDetailUiState,
+    showPlayButton: Boolean,
     onMediaDetailAction: (MediaDetailAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -41,7 +49,7 @@ fun MovieMediaDetailContent(
             duration = mediaDetailMovie.duration,
             onPlay = { onMediaDetailAction(MediaDetailAction.PlayDefault) },
             progress = mediaDetailMovie.relativeProgress,
-            showPlayButton = screenUiState.streamsUiState?.selectedStreamId != null
+            showPlayButton = showPlayButton
         )
         Spacer(modifier = Modifier.height(24.dp))
         MediaTitle(
@@ -52,14 +60,18 @@ fun MovieMediaDetailContent(
         Row(verticalAlignment = Alignment.CenterVertically) {
             if(mediaDetailMovie.progress?.isWatched == true) {
                 Image(
-                    modifier = Modifier.padding(end = 8.dp).size(18.dp),
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(18.dp),
                     painter = painterResource(id = R.drawable.ic_check_circle_24),
                     contentDescription = "Is watched",
                     colorFilter = ColorFilter.tint(StColors.watchedMedia)
                 )
             } else if(mediaDetailMovie.progress?.isInProgress == true) {
                 Image(
-                    modifier = Modifier.padding(end = 8.dp).size(18.dp),
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(18.dp),
                     painter = painterResource(id = R.drawable.ic_pause_circle_24),
                     contentDescription = "Is in progress",
                     colorFilter = ColorFilter.tint(StColors.pausedMedia)
@@ -97,5 +109,31 @@ fun MovieMediaDetailContent(
             )
         }
         Spacer(modifier = Modifier.height(64.dp))
+    }
+}
+
+@PreviewDevices
+@Composable
+fun MovieMediaDetailPreview() {
+    StTheme {
+        MovieMediaDetailContent(
+            movieUiState = MovieMediaDetailUiState(
+                movie = MediaDetailMovie(
+                    id = "2",
+                    title = "The Godfather",
+                    originalTitle = "The Godfather",
+                    imageUrl = "https://example.com/movie2.jpg",
+                    year = "1972",
+                    directors = listOf("Francis Ford Coppola"),
+                    writer = listOf("Mario Puzo", "Francis Ford Coppola"),
+                    cast = listOf("Marlon Brando", "Al Pacino"),
+                    genre = listOf("Crime", "Drama"),
+                    plot = "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+                    duration = 175
+                )
+            ),
+            showPlayButton = true,
+            onMediaDetailAction = {}
+        )
     }
 }

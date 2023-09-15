@@ -36,16 +36,18 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.apaluk.streamtheater.R
 import com.apaluk.streamtheater.core.util.SingleEvent
+import com.apaluk.streamtheater.domain.model.search.SearchResultItem
 import com.apaluk.streamtheater.ui.common.composable.BackButton
 import com.apaluk.streamtheater.ui.common.composable.DefaultEmptyState
 import com.apaluk.streamtheater.ui.common.composable.EventHandler
 import com.apaluk.streamtheater.ui.common.composable.StButton
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
+import com.apaluk.streamtheater.ui.common.util.PreviewDevices
+import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.theme.StTheme
 import kotlinx.coroutines.flow.Flow
@@ -231,12 +233,15 @@ fun TextFieldInput.toTextFieldValue(): TextFieldValue =
         selection = TextRange(cursorPosition)
     )
 
-@Preview
+@PreviewDevices
 @Composable
-fun SearchScreenPreview() {
+fun SearchScreenSuggestionsPreview() {
     StTheme {
         SearchScreenContent(
-            uiState = SearchUiState(),
+            uiState = SearchUiState(
+                searchInput = TextFieldInput("pulp fiction", 0),
+                searchSuggestions = listOf("pulp fiction", "pulp fiction 2"),
+            ),
             onSearchScreenAction = {},
             onBack = {},
             showKeyboardEvent = emptyFlow(),
@@ -245,3 +250,45 @@ fun SearchScreenPreview() {
     }
 }
 
+@PreviewDevices
+@Composable
+fun SearchScreenResultsPreview() {
+    StTheme {
+        SearchScreenContent(
+            uiState = SearchUiState(
+                uiState = UiState.Content,
+                searchResults = listOf(
+                    SearchResultItem(
+                        id = "1",
+                        title = "The Shawshank Redemption",
+                        originalTitle = "The Shawshank Redemption",
+                        generalInfo = "Drama, Crime | 1994 | 142 mins",
+                        cast = "Tim Robbins, Morgan Freeman",
+                        imageUrl = "https://example.com/movie1.jpg"
+                    ),
+                    SearchResultItem(
+                        id = "2",
+                        title = "The Godfather",
+                        originalTitle = "The Godfather",
+                        generalInfo = "Crime, Drama | 1972 | 175 mins",
+                        cast = "Marlon Brando, Al Pacino",
+                        imageUrl = "https://example.com/movie2.jpg"
+                    ),
+                    SearchResultItem(
+                        id = "3",
+                        title = "Pulp Fiction",
+                        originalTitle = "Pulp Fiction",
+                        generalInfo = "Crime, Drama | 1994 | 154 mins",
+                        cast = "John Travolta, Samuel L. Jackson",
+                        imageUrl = "https://example.com/movie3.jpg"
+                    ),
+                    // Add more SearchResultItem objects as needed
+                )
+            ),
+            onSearchScreenAction = {},
+            showKeyboardEvent = emptyFlow(),
+            scrollListToTopEvent = emptyFlow(),
+            onBack = {}
+        )
+    }
+}

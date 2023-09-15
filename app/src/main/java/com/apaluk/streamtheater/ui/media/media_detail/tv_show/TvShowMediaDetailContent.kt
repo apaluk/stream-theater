@@ -34,7 +34,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
@@ -49,6 +48,7 @@ import com.apaluk.streamtheater.domain.model.media.TvShowEpisode
 import com.apaluk.streamtheater.domain.model.media.TvShowSeason
 import com.apaluk.streamtheater.ui.common.composable.MediaTitle
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
+import com.apaluk.streamtheater.ui.common.util.PreviewDevices
 import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailAction
@@ -319,7 +319,7 @@ fun MediaDetailTvShowEpisode(
     }
 }
 
-@Preview
+@PreviewDevices
 @Composable
 fun TvShowMediaDetailContentPreview() {
     StTheme {

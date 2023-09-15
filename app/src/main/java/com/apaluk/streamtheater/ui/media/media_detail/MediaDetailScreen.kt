@@ -10,7 +10,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,6 +18,7 @@ import com.apaluk.streamtheater.ui.common.composable.BackButton
 import com.apaluk.streamtheater.ui.common.composable.EventHandler
 import com.apaluk.streamtheater.ui.common.composable.ProgressBarDialog
 import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
+import com.apaluk.streamtheater.ui.common.util.PreviewDevices
 import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.media.MediaEvent
 import com.apaluk.streamtheater.ui.media.MediaViewModel
@@ -77,8 +77,8 @@ fun MediaDetailScreenContent(
     ) {
         uiState.mediaDetailUiState?.let {
             MediaDetailContent(
-                screenUiState = uiState,
                 mediaDetailUiState = it,
+                showPlayButton = uiState.streamsUiState?.selectedStreamId != null,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
@@ -114,15 +114,15 @@ fun MediaDetailScreenContent(
 
 @Composable
 fun MediaDetailContent(
-    screenUiState: MediaDetailScreenUiState,
     mediaDetailUiState: MediaDetailUiState,
+    showPlayButton: Boolean,
     modifier: Modifier = Modifier,
     onMediaDetailAction: (MediaDetailAction) -> Unit = {}
 ) {
     when(mediaDetailUiState) {
         is MovieMediaDetailUiState -> MovieMediaDetailContent(
-            screenUiState = screenUiState,
             movieUiState = mediaDetailUiState,
+            showPlayButton = showPlayButton,
             onMediaDetailAction = onMediaDetailAction,
             modifier = modifier
         )
@@ -134,7 +134,7 @@ fun MediaDetailContent(
     }
 }
 
-@Preview(device = "spec:width=1600dp,height=800dp,orientation=landscape")
+@PreviewDevices
 @Composable
 fun MediaDetailContentPreview() {
     StTheme {
