@@ -120,8 +120,8 @@ fun TvShowMediaDetailUiState.generalInfoText(): String {
         // no seasons
         episodes?.getOrNull(0)?.year?.let { info.add(it) }
     }
-    if (seasons?.size != null && seasons.size > 1) {
-        info.add(stringResourceSafe(id = R.string.st_tv_show_count_of_seasons, seasons.size))
+    if (seasons.isNullOrEmpty().not()) {
+        info.add(stringResourceSafe(id = R.string.st_tv_show_count_of_seasons, seasons?.size!!))
     }
     tvShow.genre.commaSeparatedList(3)?.let { info.add(it) }
     return info.joinToString(separator = MEDIA_INFO_SEPARATOR)
