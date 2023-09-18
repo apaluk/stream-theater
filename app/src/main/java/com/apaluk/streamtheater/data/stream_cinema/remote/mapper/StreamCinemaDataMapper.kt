@@ -8,6 +8,14 @@ internal fun String.fixCountryName(): String =
         "cn" -> "China"
         "it" -> "Italy"
         "sk" -> "Slovakia"
+        "cs" -> "Czech Republic"
+        "gb" -> "United Kingdom"
+        "de" -> "Germany"
+        "ca" -> "Canada"
+        "au" -> "Australia"
+        "nz" -> "New Zealand"
+        "es" -> "Spain"
+        "ru" -> "Russia"
         else -> this
     }
 

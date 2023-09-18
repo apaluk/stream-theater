@@ -104,8 +104,6 @@ fun VideoPlayer(
     KeepScreenOn()
     FullScreen()
 
-    BlackVideoPlayerBackground()
-
     val exoPlayer = remember {
         val defaultDataSourceFactory = OkHttpDataSource.Factory(
             OkHttpClient.Builder()
@@ -150,21 +148,30 @@ fun VideoPlayer(
             }
     }
     DisposableEffect(
-        AndroidView(factory = {
-            PlayerView(context).apply {
-                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                player = exoPlayer
-                layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                setShowNextButton(false)
-                setShowPreviousButton(false)
-                setShowSubtitleButton(true)
-                setControllerVisibilityListener(ControllerVisibilityListener { visibility ->
-                    val isVisible = visibility == View.VISIBLE && isControllerFullyVisible
-                    playerState.isPlayerControlsFullyVisible = isVisible
-                    onPlayerScreenAction(PlayerScreenAction.PlayerControlsVisibilityChanged(isVisible))
-                })
-            }
-        })
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+        ) {
+            AndroidView(factory = {
+                PlayerView(context).apply {
+                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                    player = exoPlayer
+                    layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                    setShowNextButton(false)
+                    setShowPreviousButton(false)
+                    setShowSubtitleButton(true)
+                    setControllerVisibilityListener(ControllerVisibilityListener { visibility ->
+                        val isVisible = visibility == View.VISIBLE && isControllerFullyVisible
+                        playerState.isPlayerControlsFullyVisible = isVisible
+                        onPlayerScreenAction(
+                            PlayerScreenAction.PlayerControlsVisibilityChanged(
+                                isVisible
+                            )
+                        )
+                    })
+                }
+            })
+        }
     ) {
         onDispose { exoPlayer.release() }
     }
@@ -219,14 +226,6 @@ fun VideoPlayer(
             }
         }
     }
-}
-
-@Composable
-fun BlackVideoPlayerBackground() {
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.Black)
-    )
 }
 
 @Composable
