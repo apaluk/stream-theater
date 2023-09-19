@@ -32,7 +32,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -149,8 +148,8 @@ fun SearchBar(
     searchFieldKeyboardState: TextFieldKeyboardState,
     modifier: Modifier = Modifier,
 ) {
-    val textFieldValue by remember(uiState.searchInput) {
-        mutableStateOf(uiState.searchInput.toTextFieldValue())
+    val textFieldValue by remember(uiState.searchTextFieldValue) {
+        mutableStateOf(uiState.searchTextFieldValue)
     }
     Row(
         modifier = modifier
@@ -171,7 +170,7 @@ fun SearchBar(
                 containerColor = MaterialTheme.colorScheme.background
             ),
             onValueChange = {
-                onSearchScreenAction(SearchScreenAction.SearchTextChanged(it.text, it.selection.start))
+                onSearchScreenAction(SearchScreenAction.SearchTextChanged(it))
             },
             leadingIcon = {
                 Icon(
@@ -180,7 +179,7 @@ fun SearchBar(
                 )
             },
             trailingIcon = {
-                if(uiState.searchInput.text.isNotEmpty()) {
+                if(uiState.searchTextFieldValue.text.isNotEmpty()) {
                     Icon(
                         modifier = Modifier
                             .clickable {
@@ -213,17 +212,12 @@ fun SearchBar(
             onClick = {
                 onSearchScreenAction(SearchScreenAction.TriggerSearch)
             },
-            enabled = uiState.searchInput.text.isNotBlank(),
+            enabled = uiState.searchTextFieldValue.text.isNotBlank(),
             textStyle = MaterialTheme.typography.bodyLarge
         )
     }
 }
 
-fun TextFieldInput.toTextFieldValue(): TextFieldValue =
-    TextFieldValue(
-        text = text,
-        selection = TextRange(cursorPosition)
-    )
 
 @PreviewDevices
 @Composable
@@ -231,7 +225,7 @@ fun SearchScreenSuggestionsPreview() {
     StTheme {
         SearchScreenContent(
             uiState = SearchUiState(
-                searchInput = TextFieldInput("pulp fiction", 0),
+                searchTextFieldValue = TextFieldValue("pulp fiction"),
                 searchSuggestions = listOf("pulp fiction", "pulp fiction 2"),
             ),
             onSearchScreenAction = {},

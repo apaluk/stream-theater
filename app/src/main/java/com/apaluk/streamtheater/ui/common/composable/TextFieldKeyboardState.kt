@@ -3,6 +3,7 @@
 package com.apaluk.streamtheater.ui.common.composable
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.focus.FocusRequester
@@ -13,6 +14,7 @@ import androidx.compose.ui.platform.SoftwareKeyboardController
  * A state object that can be used to control the software keyboard visibility. Also sets focus
  * to the TextField bound via [focusRequester].
  */
+@Stable
 class TextFieldKeyboardState constructor(
     val focusRequester: FocusRequester,
     private val keyboardController: SoftwareKeyboardController?

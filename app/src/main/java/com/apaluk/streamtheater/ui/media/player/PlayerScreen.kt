@@ -163,11 +163,7 @@ fun VideoPlayer(
                     setControllerVisibilityListener(ControllerVisibilityListener { visibility ->
                         val isVisible = visibility == View.VISIBLE && isControllerFullyVisible
                         playerState.isPlayerControlsFullyVisible = isVisible
-                        onPlayerScreenAction(
-                            PlayerScreenAction.PlayerControlsVisibilityChanged(
-                                isVisible
-                            )
-                        )
+                        onPlayerScreenAction(PlayerScreenAction.PlayerControlsVisibilityChanged(isVisible))
                     })
                 }
             })

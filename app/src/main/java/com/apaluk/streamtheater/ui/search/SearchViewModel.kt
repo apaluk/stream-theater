@@ -2,6 +2,7 @@
 
 package com.apaluk.streamtheater.ui.search
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.apaluk.streamtheater.domain.model.search.SearchResultItem
 import com.apaluk.streamtheater.domain.repository.SearchHistoryRepository
@@ -29,7 +30,7 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 uiState.map { it.uiState }.distinctUntilChanged(),
-                uiState.map { it.searchInput }.distinctUntilChanged()
+                uiState.map { it.searchTextFieldValue }.distinctUntilChanged()
             ) { uiState, searchText ->
                 if (uiState == UiState.Idle)
                     searchText
@@ -65,14 +66,14 @@ class SearchViewModel @Inject constructor(
     }
 
     private fun onSearchTextChanged(action: SearchScreenAction.SearchTextChanged) {
-        emitUiState { it.copy(searchInput = TextFieldInput(action.text, action.cursorPosition)) }
+        emitUiState { it.copy(searchTextFieldValue = action.textFieldValue) }
         if(action.triggerSearch) {
             onTriggerSearch()
         }
     }
 
     private fun onTriggerSearch() {
-        val searchText = uiState.value.searchInput.text.trim()
+        val searchText = uiState.value.searchTextFieldValue.text.trim()
         viewModelScope.launch {
             searchHistoryRepository.addToHistory(searchText)
         }
@@ -92,7 +93,7 @@ class SearchViewModel @Inject constructor(
             it.copy(
                 searchResults = emptyList(),
                 uiState = UiState.Idle,
-                searchInput = TextFieldInput()
+                searchTextFieldValue = TextFieldValue()
             )
         }
     }
@@ -105,7 +106,7 @@ class SearchViewModel @Inject constructor(
 }
 
 data class SearchUiState(
-    val searchInput: TextFieldInput = TextFieldInput(),
+    val searchTextFieldValue: TextFieldValue = TextFieldValue(),
     val searchResults: List<SearchResultItem> = emptyList(),
     val uiState: UiState = UiState.Idle,
     val searchSuggestions: List<String>? = null,
@@ -113,8 +114,7 @@ data class SearchUiState(
 
 sealed class SearchScreenAction {
     data class SearchTextChanged(
-        val text: String,
-        val cursorPosition: Int,
+        val textFieldValue: TextFieldValue,
         val triggerSearch: Boolean = false
     ): SearchScreenAction()
     object TriggerSearch: SearchScreenAction()
@@ -128,8 +128,3 @@ sealed class SearchScreenEvent {
     data class SelectMedia(val mediaId: String): SearchScreenEvent()
     object ScrollListToTop: SearchScreenEvent()
 }
-
-data class TextFieldInput(
-    val text: String = "",
-    val cursorPosition: Int = 0,
-)
