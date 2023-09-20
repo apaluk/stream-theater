@@ -2,7 +2,11 @@ package com.apaluk.streamtheater.ui.search
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -21,12 +25,26 @@ import com.apaluk.streamtheater.R
 @Composable
 fun SearchHistoryList(
     searchHistoryList: List<String>,
-    onSearchScreenAction: (SearchScreenAction) -> Unit,
     modifier: Modifier = Modifier,
+    onItemSelected: (String) -> Unit = {},
+    onTriggerSearch: () -> Unit = {},
+    onDeleteItem: (String) -> Unit = {},
 ) {
     LazyColumn(modifier = modifier) {
         items(searchHistoryList) {
-            SearchHistoryItem(text = it, onSearchScreenAction = onSearchScreenAction)
+            SearchHistoryItem(
+                text = it,
+                onItemSelected = { text ->
+                    onItemSelected(text)
+                    onTriggerSearch()
+                },
+                onItemAppend = { text ->
+                    onItemSelected(text)
+                },
+                onDeleteItem = { text ->
+                    onDeleteItem(text)
+                }
+            )
         }
     }
 }
@@ -34,21 +52,14 @@ fun SearchHistoryList(
 @Composable
 fun SearchHistoryItem(
     text: String,
-    onSearchScreenAction: (SearchScreenAction) -> Unit,
+    onItemSelected: (String) -> Unit = {},
+    onItemAppend: (String) -> Unit = {},
+    onDeleteItem: (String) -> Unit = {},
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                val newText = "${text.trim()} "
-                onSearchScreenAction(
-                    SearchScreenAction.SearchTextChanged(
-                        text = newText,
-                        cursorPosition = newText.length,
-                        triggerSearch = true
-                    )
-                )
-            }
+            .clickable { onItemSelected("${text.trim()} ") }
             .padding(horizontal = 64.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -66,7 +77,7 @@ fun SearchHistoryItem(
                 .padding(vertical = 4.dp, horizontal = 8.dp)
                 .size(48.dp)
                 .clip(MaterialTheme.shapes.large)
-                .clickable { onSearchScreenAction(SearchScreenAction.DeleteSearchHistoryEntry(text)) },
+                .clickable { onDeleteItem(text) },
             contentAlignment = Alignment.Center
         ) {
             Image(
@@ -80,15 +91,7 @@ fun SearchHistoryItem(
                 .padding(vertical = 4.dp, horizontal = 8.dp)
                 .size(48.dp)
                 .clip(MaterialTheme.shapes.large)
-                .clickable {
-                    val newText = "${text.trim()} "
-                    onSearchScreenAction(
-                        SearchScreenAction.SearchTextChanged(
-                            text = newText,
-                            cursorPosition = newText.length,
-                        )
-                    )
-                },
+                .clickable { onItemAppend("${text.trim()} ") },
             contentAlignment = Alignment.Center
         ) {
             Image(

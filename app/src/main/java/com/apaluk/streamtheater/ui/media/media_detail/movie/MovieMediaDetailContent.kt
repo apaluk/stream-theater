@@ -23,7 +23,6 @@ import com.apaluk.streamtheater.domain.model.media.MediaDetailMovie
 import com.apaluk.streamtheater.ui.common.composable.MediaTitle
 import com.apaluk.streamtheater.ui.common.util.PreviewDevices
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
-import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailAction
 import com.apaluk.streamtheater.ui.media.media_detail.MovieMediaDetailUiState
 import com.apaluk.streamtheater.ui.media.media_detail.common.CrewMembers
 import com.apaluk.streamtheater.ui.media.media_detail.common.MediaDetailPoster
@@ -37,8 +36,8 @@ import com.apaluk.streamtheater.ui.theme.StTheme
 fun MovieMediaDetailContent(
     movieUiState: MovieMediaDetailUiState,
     showPlayButton: Boolean,
-    onMediaDetailAction: (MediaDetailAction) -> Unit,
     modifier: Modifier = Modifier,
+    onPlayDefault: () -> Unit = {},
 ) {
     val mediaDetailMovie = movieUiState.movie
     Column(
@@ -47,7 +46,7 @@ fun MovieMediaDetailContent(
         MediaDetailPoster(
             imageUrl = mediaDetailMovie.imageUrl,
             duration = mediaDetailMovie.duration,
-            onPlay = { onMediaDetailAction(MediaDetailAction.PlayDefault) },
+            onPlay = { onPlayDefault() },
             progress = mediaDetailMovie.relativeProgress,
             showPlayButton = showPlayButton
         )
@@ -133,7 +132,6 @@ fun MovieMediaDetailPreview() {
                 )
             ),
             showPlayButton = true,
-            onMediaDetailAction = {}
         )
     }
 }

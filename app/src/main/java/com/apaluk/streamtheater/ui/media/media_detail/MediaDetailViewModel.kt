@@ -164,8 +164,8 @@ class MediaDetailViewModel @Inject constructor(
         when(action) {
             MediaDetailAction.PlayDefault -> onPlayDefault()
             is MediaDetailAction.PlayStream -> onPlayStream(action)
-            is MediaDetailAction.SelectTvShowSeason -> onSelectTvShowSeason(action)
-            is MediaDetailAction.SelectTvShowEpisode -> onSelectTvShowEpisode(action)
+            is MediaDetailAction.SelectSeasonIndex -> onSelectSeasonIndex(action)
+            is MediaDetailAction.SelectEpisodeIndex -> onSelectEpisodeIndex(action)
             MediaDetailAction.SkipToNextVideo -> onSkipToNextVideo()
             MediaDetailAction.SkipToPreviousVideo -> onSkipToPreviousVideo()
         }
@@ -198,11 +198,11 @@ class MediaDetailViewModel @Inject constructor(
         }
     }
 
-    private fun onSelectTvShowSeason(action: MediaDetailAction.SelectTvShowSeason) {
+    private fun onSelectSeasonIndex(action: MediaDetailAction.SelectSeasonIndex) {
         updateTvShowUiState { it.copy(selectedSeasonIndex = action.seasonIndex) }
     }
 
-    private fun onSelectTvShowEpisode(action: MediaDetailAction.SelectTvShowEpisode) {
+    private fun onSelectEpisodeIndex(action: MediaDetailAction.SelectEpisodeIndex) {
         if(action.episodeIndex != uiState.value.tvShowUiState?.selectedEpisodeIndex) {
             emitUiState { it.copy(streamsUiState = null) }
             updateTvShowUiState { it.copy(selectedEpisodeIndex = action.episodeIndex) }

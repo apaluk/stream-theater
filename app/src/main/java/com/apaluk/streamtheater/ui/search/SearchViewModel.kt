@@ -12,6 +12,7 @@ import com.apaluk.streamtheater.ui.common.util.toUiState
 import com.apaluk.streamtheater.ui.common.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,31 +25,12 @@ class SearchViewModel @Inject constructor(
 
     override val initialState: SearchUiState = SearchUiState()
 
+    private var searchJob: MutableStateFlow<Job?> = MutableStateFlow(null)
+
     init {
         emitEvent(SearchScreenEvent.ShowKeyboard(true))
-        // fetch search suggestions when in Idle state
-        viewModelScope.launch {
-            combine(
-                uiState.map { it.uiState }.distinctUntilChanged(),
-                uiState.map { it.searchTextFieldValue }.distinctUntilChanged()
-            ) { uiState, searchText ->
-                if (uiState == UiState.Idle)
-                    searchText
-                else
-                    null
-            }.flatMapLatest { searchText ->
-                if (searchText != null) {
-                    searchHistoryRepository
-                        .getFilteredHistory(searchText.text)
-                        .map { list ->
-                            list.map { it.text }
-                        }
-
-                } else flowOf(null)
-            }.collectLatest { suggestions ->
-                emitUiState { it.copy(searchSuggestions = suggestions) }
-            }
-        }
+        fetchSuggestions()
+        updateSearchButtonEnabledState()
     }
 
     override fun handleAction(action: SearchScreenAction) {
@@ -66,34 +48,35 @@ class SearchViewModel @Inject constructor(
     }
 
     private fun onSearchTextChanged(action: SearchScreenAction.SearchTextChanged) {
-        emitUiState { it.copy(searchTextFieldValue = action.textFieldValue) }
-        if(action.triggerSearch) {
-            onTriggerSearch()
-        }
+        emitUiState { it.copy(searchFieldValue = action.textFieldValue) }
     }
 
     private fun onTriggerSearch() {
-        val searchText = uiState.value.searchTextFieldValue.text.trim()
+        searchJob.value?.cancel()
+        val searchText = uiState.value.searchFieldValue.text.trim()
         viewModelScope.launch {
             searchHistoryRepository.addToHistory(searchText)
         }
-        viewModelScope.launch {
+        searchJob.value = viewModelScope.launch {
             emitEvent(SearchScreenEvent.ShowKeyboard(false))
             emitEvent(SearchScreenEvent.ScrollListToTop)
             emitUiState { it.copy(uiState = UiState.Loading) }
             val searchResource = streamCinemaRepository.search(searchText).last()
             emitUiState {
-                it.copy(searchResults = searchResource.data.orEmpty(), uiState = searchResource.toUiState(),)
+                it.copy(results = searchResource.data.orEmpty(), uiState = searchResource.toUiState(),)
             }
+            searchJob.value = null
         }
     }
 
     private fun onClearSearch() {
+        searchJob.value?.cancel()
+        searchJob.value = null
         emitUiState {
             it.copy(
-                searchResults = emptyList(),
+                results = emptyList(),
                 uiState = UiState.Idle,
-                searchTextFieldValue = TextFieldValue()
+                searchFieldValue = TextFieldValue()
             )
         }
     }
@@ -103,20 +86,55 @@ class SearchViewModel @Inject constructor(
             searchHistoryRepository.deleteFromHistory(action.entry)
         }
     }
+
+    private fun fetchSuggestions() {
+        // fetch search suggestions when state is Idle
+        viewModelScope.launch {
+            combine(
+                uiState.map { it.uiState }.distinctUntilChanged(),
+                uiState.map { it.searchFieldValue }.distinctUntilChanged()
+            ) { uiState, searchText ->
+                if (uiState == UiState.Idle) searchText else null
+            }.flatMapLatest { searchText ->
+                if (searchText != null) {
+                    searchHistoryRepository
+                        .getFilteredHistory(searchText.text)
+                        .map { list ->
+                            list.map { it.text }
+                        }
+
+                } else flowOf(null)
+            }.collectLatest { suggestions ->
+                emitUiState { it.copy(suggestions = suggestions) }
+            }
+        }
+    }
+
+    private fun updateSearchButtonEnabledState() {
+        viewModelScope.launch {
+            combine(
+                uiState.map { it.searchFieldValue.text }.distinctUntilChanged(),
+                searchJob
+            ) { searchText, searchJob ->
+                searchText.isNotBlank() && searchJob == null
+            }.collect { searchButtonEnabled ->
+                emitUiState { it.copy(searchButtonEnabled = searchButtonEnabled) }
+            }
+        }
+    }
+
 }
 
 data class SearchUiState(
-    val searchTextFieldValue: TextFieldValue = TextFieldValue(),
-    val searchResults: List<SearchResultItem> = emptyList(),
     val uiState: UiState = UiState.Idle,
-    val searchSuggestions: List<String>? = null,
+    val searchFieldValue: TextFieldValue = TextFieldValue(),
+    val results: List<SearchResultItem> = emptyList(),
+    val suggestions: List<String>? = null,
+    val searchButtonEnabled: Boolean = false
 )
 
 sealed class SearchScreenAction {
-    data class SearchTextChanged(
-        val textFieldValue: TextFieldValue,
-        val triggerSearch: Boolean = false
-    ): SearchScreenAction()
+    data class SearchTextChanged(val textFieldValue: TextFieldValue): SearchScreenAction()
     object TriggerSearch: SearchScreenAction()
     object ClearSearch: SearchScreenAction()
     data class MediaSelected(val mediaId: String): SearchScreenAction()

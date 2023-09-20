@@ -35,8 +35,8 @@ data class TvShowMediaDetailUiState(
 sealed class MediaDetailAction {
     object PlayDefault: MediaDetailAction()
     data class PlayStream(val stream: MediaStream): MediaDetailAction()
-    data class SelectTvShowSeason(val seasonIndex: Int): MediaDetailAction()
-    data class SelectTvShowEpisode(val episodeIndex: Int): MediaDetailAction()
+    data class SelectSeasonIndex(val seasonIndex: Int): MediaDetailAction()
+    data class SelectEpisodeIndex(val episodeIndex: Int): MediaDetailAction()
     object SkipToPreviousVideo: MediaDetailAction()
     object SkipToNextVideo: MediaDetailAction()
 }

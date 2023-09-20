@@ -51,7 +51,6 @@ import com.apaluk.streamtheater.ui.common.composable.UiStateAnimator
 import com.apaluk.streamtheater.ui.common.util.PreviewDevices
 import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
-import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailAction
 import com.apaluk.streamtheater.ui.media.media_detail.TvShowMediaDetailUiState
 import com.apaluk.streamtheater.ui.media.media_detail.common.DropDownSelector
 import com.apaluk.streamtheater.ui.media.media_detail.common.MediaDetailPoster
@@ -67,7 +66,9 @@ import com.apaluk.streamtheater.ui.theme.StTheme
 fun TvShowMediaDetailContent(
     tvShowUiState: TvShowMediaDetailUiState,
     modifier: Modifier = Modifier,
-    onMediaDetailAction: (MediaDetailAction) -> Unit = {},
+    onPlayDefault: () -> Unit = {},
+    onSelectEpisodeIndex: (Int) -> Unit = {},
+    onSelectedSeasonIndex: (Int) -> Unit = {},
 ) {
     val mediaDetailTvShow = tvShowUiState.tvShow
     val showSeasonSelectorDialog = remember { mutableStateOf(false) }
@@ -78,7 +79,7 @@ fun TvShowMediaDetailContent(
         tvShowUiState.posterData?.let { posterData ->
             MediaDetailPoster(
                 imageUrl = posterData.imageUrl,
-                onPlay = { onMediaDetailAction(MediaDetailAction.PlayDefault) },
+                onPlay = { onPlayDefault() },
                 bottomStartTexts = listOf(
                     posterData.episodeNumber,
                     posterData.episodeName
@@ -115,8 +116,10 @@ fun TvShowMediaDetailContent(
         )
         Spacer(modifier = Modifier.height(16.dp))
         MediaDetailTvShowEpisodesList(
-            tvShowUiState = tvShowUiState,
-            onMediaDetailAction = onMediaDetailAction
+            episodesUiState = tvShowUiState.episodesUiState,
+            episodes = tvShowUiState.episodes,
+            selectedEpisodeIndex = tvShowUiState.selectedEpisodeIndex,
+            onSelectEpisodeIndex = { onSelectEpisodeIndex(it) }
         )
         Spacer(modifier = Modifier.height(64.dp))
     }
@@ -125,7 +128,7 @@ fun TvShowMediaDetailContent(
             SelectSeasonDialog(
                 seasons = seasons,
                 onSeasonIndexSelected = {
-                    onMediaDetailAction(MediaDetailAction.SelectTvShowSeason(it))
+                    onSelectedSeasonIndex(it)
                     showSeasonSelectorDialog.value = false
                 },
                 onDismiss = { showSeasonSelectorDialog.value = false }
@@ -174,14 +177,16 @@ private fun SelectSeasonDialog(
 
 @Composable
 fun MediaDetailTvShowEpisodesList(
-    tvShowUiState: TvShowMediaDetailUiState,
-    onMediaDetailAction: (MediaDetailAction) -> Unit
+    episodesUiState: UiState,
+    episodes: List<TvShowEpisode>?,
+    selectedEpisodeIndex: Int?,
+    onSelectEpisodeIndex: (Int) -> Unit = {},
 ) {
     UiStateAnimator(
-        uiState = tvShowUiState.episodesUiState,
+        uiState = episodesUiState,
         modifier = Modifier.heightIn(min = 140.dp)
     ) {
-        val episodes = tvShowUiState.episodes ?: return@UiStateAnimator
+        episodes ?: return@UiStateAnimator
         Column {
             Divider(
                 color = MaterialTheme.colorScheme.surfaceVariant,
@@ -190,8 +195,8 @@ fun MediaDetailTvShowEpisodesList(
             episodes.forEachIndexed { index, episode ->
                 MediaDetailTvShowEpisode(
                     episode = episode,
-                    onSelected = { onMediaDetailAction(MediaDetailAction.SelectTvShowEpisode(index)) },
-                    isSelected = index == tvShowUiState.selectedEpisodeIndex
+                    onSelected = { onSelectEpisodeIndex(index) },
+                    isSelected = index == selectedEpisodeIndex
                 )
                 Divider(
                     modifier = Modifier.padding(horizontal = 6.dp),

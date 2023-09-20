@@ -38,7 +38,7 @@ fun MediaDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
     TopAppBar(
         navigationIcon = {
-            BackButton(onBack = { onNavigateUp() })
+            BackButton(onClick = { onNavigateUp() })
         },
         title = {}
     )
@@ -123,13 +123,15 @@ fun MediaDetailContent(
         is MovieMediaDetailUiState -> MovieMediaDetailContent(
             movieUiState = mediaDetailUiState,
             showPlayButton = showPlayButton,
-            onMediaDetailAction = onMediaDetailAction,
-            modifier = modifier
+            modifier = modifier,
+            onPlayDefault = { onMediaDetailAction(MediaDetailAction.PlayDefault) }
         )
         is TvShowMediaDetailUiState -> TvShowMediaDetailContent(
             tvShowUiState = mediaDetailUiState,
-            onMediaDetailAction = onMediaDetailAction,
-            modifier = modifier
+            modifier = modifier,
+            onPlayDefault = { onMediaDetailAction(MediaDetailAction.PlayDefault) },
+            onSelectEpisodeIndex = { index -> onMediaDetailAction(MediaDetailAction.SelectEpisodeIndex(index)) },
+            onSelectedSeasonIndex = { index -> onMediaDetailAction(MediaDetailAction.SelectSeasonIndex(index)) }
         )
     }
 }

@@ -44,11 +44,11 @@ fun TopAppBarAction(
 @Composable
 fun BackButton(
     modifier: Modifier = Modifier,
-    onBack: () -> Unit
+    onClick: () -> Unit
 ) {
     IconButton(
         modifier = modifier,
-        onClick = { onBack() }
+        onClick = { onClick() }
     ) {
         Icon(
             modifier = modifier,

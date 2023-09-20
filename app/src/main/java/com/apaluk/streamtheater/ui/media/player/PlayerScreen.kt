@@ -67,16 +67,9 @@ fun PlayerScreen(
             VideoPlayer(
                 uri = Uri.parse(videoUrl),
                 uiState = uiState,
-                onPlayerScreenAction = viewModel::onAction,
                 seekToPosition = uiState.seekToPosition,
-                onSkipToPreviousVideo = {
-                    mediaViewModel.onAction(MediaAction.SkipToPreviousVideo)
-                    onNavigateUp()
-                },
-                onSkipToNextVideo = {
-                    mediaViewModel.onAction(MediaAction.SkipToNextVideo)
-                    onNavigateUp()
-                }
+                onPlayerScreenAction = viewModel::onAction,
+                onMediaAction = mediaViewModel::onAction
             )
         }
     }
@@ -93,13 +86,12 @@ fun PlayerScreen(
 fun VideoPlayer(
     uri: Uri,
     uiState: PlayerScreenUiState,
-    onPlayerScreenAction: (PlayerScreenAction) -> Unit,
     seekToPosition: Long? = null,
-    onSkipToPreviousVideo: () -> Unit = {},
-    onSkipToNextVideo: () -> Unit = {}
+    onPlayerScreenAction: (PlayerScreenAction) -> Unit = {},
+    onMediaAction: (MediaAction) -> Unit = {},
 ) {
     val context = LocalContext.current
-    val playerState = remember { PlayerState() }
+    val playerState = rememberPlayerState()
 
     KeepScreenOn()
     FullScreen()
@@ -127,7 +119,7 @@ fun VideoPlayer(
                         }
                     }
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        playerState.isPlaying.value = true
+                        //playerState.isPlaying = true
                     }
                     override fun onPositionDiscontinuity(
                         oldPosition: Player.PositionInfo,
@@ -175,8 +167,8 @@ fun VideoPlayer(
     if(playerState.isPlayerControlsFullyVisible) {
         VideoPlayerOverlay(
             uiState = uiState,
-            onSkipToPrevious = onSkipToPreviousVideo,
-            onSkipToNext = onSkipToNextVideo,
+            onSkipToPrevious = { onMediaAction(MediaAction.SkipToPreviousVideo) },
+            onSkipToNext = { onMediaAction(MediaAction.SkipToNextVideo) },
         )
     }
     OnLifecycleEvent { _, event ->
@@ -204,22 +196,6 @@ fun VideoPlayer(
         LaunchedEffect(seekToPosition) {
             exoPlayer.seekTo(TimeUnit.SECONDS.toMillis(seekToPosition))
             exoPlayer.playWhenReady = true
-        }
-    }
-
-    // if player stops, update progress
-    LaunchedEffect(Unit) {
-        playerState.isPlaying.collectLatest { isPlaying ->
-            if(!isPlaying)  {
-                onPlayerScreenAction(
-                    PlayerScreenAction.VideoProgressChanged(
-                        VideoProgress(
-                            exoPlayer.currentPosition.millisToSeconds().toInt(),
-                            exoPlayer.duration.millisToSeconds().toInt()
-                        )
-                    )
-                )
-            }
         }
     }
 }

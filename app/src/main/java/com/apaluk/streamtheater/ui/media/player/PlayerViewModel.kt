@@ -14,6 +14,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -48,7 +49,7 @@ class PlayerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            playStreamParams.filterNotNull().collect { params ->
+            playStreamParams.filterNotNull().collectLatest { params ->
                 emitUiState { it.copy(playerMediaInfo = params.mediaInfo) }
 
                 // get video file link

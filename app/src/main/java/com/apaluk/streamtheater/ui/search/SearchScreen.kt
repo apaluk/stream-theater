@@ -25,13 +25,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -74,7 +73,7 @@ fun SearchScreen(
         modifier = modifier,
         uiState = uiState,
         onSearchScreenAction = viewModel::onAction,
-        onBack = { onNavigateUp() },
+        onNavigateBack = { onNavigateUp() },
         searchFieldKeyboardState = searchFieldKeyboardState,
         searchResultListState = searchResultsListState
     )
@@ -82,12 +81,12 @@ fun SearchScreen(
 
 @Composable
 private fun SearchScreenContent(
-    modifier: Modifier = Modifier,
     uiState: SearchUiState,
-    onSearchScreenAction: (SearchScreenAction) -> Unit,
-    searchFieldKeyboardState: TextFieldKeyboardState,
-    searchResultListState: LazyListState,
-    onBack: () -> Unit
+    modifier: Modifier = Modifier,
+    onSearchScreenAction: (SearchScreenAction) -> Unit = {},
+    onNavigateBack: () -> Unit = {},
+    searchFieldKeyboardState: TextFieldKeyboardState = rememberTextFieldKeyboardState(),
+    searchResultListState: LazyListState = rememberLazyListState()
 ) {
     val toolbarHeight = 82.dp
     Scaffold(
@@ -98,13 +97,14 @@ private fun SearchScreenContent(
                 navigationIcon = {
                     BackButton(
                         modifier = Modifier.height(toolbarHeight),
-                        onBack = { onBack() }
+                        onClick = { onNavigateBack() }
                     )
                 },
                 title = {
                     SearchBar(
+                        textFieldValue = uiState.searchFieldValue,
+                        searchButtonEnabled = uiState.searchButtonEnabled,
                         modifier = Modifier.height(toolbarHeight),
-                        uiState = uiState,
                         onSearchScreenAction = onSearchScreenAction,
                         searchFieldKeyboardState = searchFieldKeyboardState
                     )
@@ -119,20 +119,24 @@ private fun SearchScreenContent(
                 uiState = uiState.uiState,
                 empty = { DefaultEmptyState(text = stringResourceSafe(id = R.string.st_search_empty_results))},
                 idle = {
-                    uiState.searchSuggestions?.let {
+                    uiState.suggestions?.let { searchSuggestions ->
                         SearchHistoryList(
-                            searchHistoryList = it,
-                            onSearchScreenAction = onSearchScreenAction,
                             modifier = Modifier
                                 .padding(paddingValues)
-                                .fillMaxSize()
+                                .fillMaxSize(),
+                            searchHistoryList = searchSuggestions,
+                            onItemSelected = { text -> onSearchScreenAction(
+                                SearchScreenAction.SearchTextChanged(TextFieldValue(text, TextRange(text.length)))
+                            ) },
+                            onTriggerSearch = { onSearchScreenAction(SearchScreenAction.TriggerSearch) },
+                            onDeleteItem = { onSearchScreenAction(SearchScreenAction.DeleteSearchHistoryEntry(it)) }
                         )
                     }
                 }
             ) {
                 SearchResults(
                     modifier = Modifier.padding(paddingValues),
-                    results = uiState.searchResults,
+                    results = uiState.results,
                     onResultClicked = { onSearchScreenAction(SearchScreenAction.MediaSelected(it)) },
                     listState = searchResultListState
                 )
@@ -143,14 +147,12 @@ private fun SearchScreenContent(
 
 @Composable
 fun SearchBar(
-    uiState: SearchUiState,
-    onSearchScreenAction: (SearchScreenAction) -> Unit,
-    searchFieldKeyboardState: TextFieldKeyboardState,
+    textFieldValue: TextFieldValue,
+    searchButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
+    onSearchScreenAction: (SearchScreenAction) -> Unit = {},
+    searchFieldKeyboardState: TextFieldKeyboardState = rememberTextFieldKeyboardState(),
 ) {
-    val textFieldValue by remember(uiState.searchTextFieldValue) {
-        mutableStateOf(uiState.searchTextFieldValue)
-    }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -179,7 +181,7 @@ fun SearchBar(
                 )
             },
             trailingIcon = {
-                if(uiState.searchTextFieldValue.text.isNotEmpty()) {
+                if(textFieldValue.text.isNotEmpty()) {
                     Icon(
                         modifier = Modifier
                             .clickable {
@@ -212,7 +214,7 @@ fun SearchBar(
             onClick = {
                 onSearchScreenAction(SearchScreenAction.TriggerSearch)
             },
-            enabled = uiState.searchTextFieldValue.text.isNotBlank(),
+            enabled = searchButtonEnabled,
             textStyle = MaterialTheme.typography.bodyLarge
         )
     }
@@ -225,11 +227,11 @@ fun SearchScreenSuggestionsPreview() {
     StTheme {
         SearchScreenContent(
             uiState = SearchUiState(
-                searchTextFieldValue = TextFieldValue("pulp fiction"),
-                searchSuggestions = listOf("pulp fiction", "pulp fiction 2"),
+                searchFieldValue = TextFieldValue("pulp fiction"),
+                suggestions = listOf("pulp fiction", "pulp fiction 2"),
             ),
             onSearchScreenAction = {},
-            onBack = {},
+            onNavigateBack = {},
             searchFieldKeyboardState = rememberTextFieldKeyboardState(),
             searchResultListState = rememberLazyListState()
         )
@@ -243,7 +245,7 @@ fun SearchScreenResultsPreview() {
         SearchScreenContent(
             uiState = SearchUiState(
                 uiState = UiState.Content,
-                searchResults = listOf(
+                results = listOf(
                     SearchResultItem(
                         id = "1",
                         title = "The Shawshank Redemption",
@@ -268,13 +270,12 @@ fun SearchScreenResultsPreview() {
                         cast = "John Travolta, Samuel L. Jackson",
                         imageUrl = "https://example.com/movie3.jpg"
                     ),
-                    // Add more SearchResultItem objects as needed
                 )
             ),
             onSearchScreenAction = {},
             searchFieldKeyboardState = rememberTextFieldKeyboardState(),
             searchResultListState = rememberLazyListState(),
-            onBack = {}
+            onNavigateBack = {}
         )
     }
 }

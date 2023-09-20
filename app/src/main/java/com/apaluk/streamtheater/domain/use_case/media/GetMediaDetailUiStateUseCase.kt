@@ -1,7 +1,7 @@
 package com.apaluk.streamtheater.domain.use_case.media
 
-import android.content.Context
 import com.apaluk.streamtheater.R
+import com.apaluk.streamtheater.core.resources.ResourcesManager
 import com.apaluk.streamtheater.core.util.Resource
 import com.apaluk.streamtheater.core.util.convertNonSuccess
 import com.apaluk.streamtheater.domain.model.media.util.toMediaProgress
@@ -15,8 +15,11 @@ import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailUiState
 import com.apaluk.streamtheater.ui.media.media_detail.MovieMediaDetailUiState
 import com.apaluk.streamtheater.ui.media.media_detail.TvShowMediaDetailUiState
 import com.apaluk.streamtheater.ui.media.media_detail.util.toMediaDetailUiState
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetMediaDetailUiStateUseCase @Inject constructor(
@@ -25,7 +28,7 @@ class GetMediaDetailUiStateUseCase @Inject constructor(
     private val watchHistoryRepository: WatchHistoryRepository,
     private val getSelectedSeasonUseCase: GetSelectedSeasonUseCase,
     private val getSelectedEpisodeUseCase: GetSelectedEpisodeUseCase,
-    @ApplicationContext private val context: Context
+    private val resourcesManager: ResourcesManager
 ) {
     operator fun invoke(mediaId: String): Flow<Resource<MediaDetailUiState>> = flow {
         emit(Resource.Loading())
@@ -85,7 +88,7 @@ class GetMediaDetailUiStateUseCase @Inject constructor(
                                 if(episodes !is Resource.Success) {
                                     emit(Resource.Success(mediaDetailUiState.copy(episodesUiState = episodes.toUiState())))
                                 } else if(episodes.data == null) {
-                                    emit(Resource.Error(context.getString(R.string.st_media_error_no_episodes)))
+                                    emit(Resource.Error(resourcesManager.getString(R.string.st_media_error_no_episodes)))
                                 } else {
                                     // episodes found, update UI state
                                     val selectedEpisodeIndex = getSelectedEpisodeUseCase(mediaId, null, episodes.data)

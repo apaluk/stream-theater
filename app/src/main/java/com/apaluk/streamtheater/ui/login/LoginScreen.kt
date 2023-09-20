@@ -64,17 +64,27 @@ fun LoginScreenContent(
     UiStateAnimator(uiState = uiState.uiState) {
         LoginScreenForm(
             modifier = modifier,
-            uiState = uiState,
-            onLoginScreenAction = onLoginScreenAction
+            userName = uiState.userName,
+            password = uiState.password,
+            isLoggingIn = uiState.isLoggingIn,
+            errorMessage = uiState.errorMessage,
+            onUserNameChanged = { onLoginScreenAction(LoginAction.UpdateUsername(it)) },
+            onPasswordChanged = { onLoginScreenAction(LoginAction.UpdatePassword(it)) },
+            onLoginButtonClicked = { onLoginScreenAction(LoginAction.LoginButtonClicked) }
         )
     }
 }
 
 @Composable
 fun LoginScreenForm(
-    uiState: LoginUiState,
+    userName: String,
+    password: String,
+    isLoggingIn: Boolean,
+    errorMessage: String?,
     modifier: Modifier = Modifier,
-    onLoginScreenAction: (LoginAction) -> Unit
+    onUserNameChanged: (String) -> Unit = {},
+    onPasswordChanged: (String) -> Unit = {},
+    onLoginButtonClicked: () -> Unit = {}
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
@@ -110,19 +120,15 @@ fun LoginScreenForm(
             TextFieldWithHeader(
                 modifier = Modifier.testTag("login:username"),
                 header = stringResourceSafe(id = R.string.st_login_username),
-                editText = uiState.userName,
-                onTextChanged = {
-                    onLoginScreenAction(LoginAction.UpdateUsername(it))
-                },
+                editText = userName,
+                onTextChanged = { onUserNameChanged(it) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
             Spacer(modifier = modifier.height(16.dp))
             TextFieldWithHeader(
                 header = stringResourceSafe(id = R.string.st_login_password),
-                editText = uiState.password,
-                onTextChanged =  {
-                    onLoginScreenAction(LoginAction.UpdatePassword(it))
-                },
+                editText = password,
+                onTextChanged =  { onPasswordChanged(it) },
                 modifier = Modifier.testTag("login:password"),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -131,7 +137,7 @@ fun LoginScreenForm(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         keyboardController?.hide()
-                        onLoginScreenAction(LoginAction.LoginButtonClicked)
+                        onLoginButtonClicked()
                     }
                 ),
                 visualTransformation = PasswordVisualTransformation()
@@ -141,11 +147,11 @@ fun LoginScreenForm(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 StButton(
-                    onClick = { onLoginScreenAction(LoginAction.LoginButtonClicked) },
+                    onClick = { onLoginButtonClicked() },
                     text = stringResourceSafe(id = R.string.st_login_positive_button),
-                    enabled = uiState.isLoggingIn.not(),
+                    enabled = isLoggingIn.not(),
                 )
-                if(uiState.isLoggingIn) {
+                if(isLoggingIn) {
                     Spacer(modifier = Modifier.width(32.dp))
                     CircularProgressIndicator(
                         modifier = Modifier
@@ -156,7 +162,7 @@ fun LoginScreenForm(
                     )
                 }
             }
-            uiState.errorMessage?.let { errorMessage ->
+            errorMessage?.let { errorMessage ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -180,13 +186,10 @@ private fun BasicPreview() {
     StTheme {
         LoginScreenForm(
             modifier = Modifier,
-            uiState = LoginUiState(
-                userName = "apaluk",
-                password = "nbusr123",
-                isLoggingIn = false,
-                errorMessage = "Something went wrong!"
-            ),
-            onLoginScreenAction = {}
+            userName = "apaluk",
+            password = "nbusr123",
+            isLoggingIn = false,
+            errorMessage = "Something went wrong!",
         )
     }
 }
