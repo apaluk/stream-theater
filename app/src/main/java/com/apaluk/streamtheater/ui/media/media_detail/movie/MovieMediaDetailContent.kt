@@ -26,6 +26,7 @@ import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.media.media_detail.MovieMediaDetailUiState
 import com.apaluk.streamtheater.ui.media.media_detail.common.CrewMembers
 import com.apaluk.streamtheater.ui.media.media_detail.common.MediaDetailPoster
+import com.apaluk.streamtheater.ui.media.media_detail.common.MediaDetailPosterMainAction
 import com.apaluk.streamtheater.ui.media.media_detail.common.StColors
 import com.apaluk.streamtheater.ui.media.media_detail.util.generalInfoText
 import com.apaluk.streamtheater.ui.media.media_detail.util.isInProgress
@@ -48,7 +49,7 @@ fun MovieMediaDetailContent(
             duration = mediaDetailMovie.duration,
             onPlay = { onPlayDefault() },
             progress = mediaDetailMovie.relativeProgress,
-            showPlayButton = showPlayButton
+            mainButtonAction = MediaDetailPosterMainAction.from(showPlayButton, mediaDetailMovie.progress?.isWatched == true)
         )
         Spacer(modifier = Modifier.height(24.dp))
         MediaTitle(

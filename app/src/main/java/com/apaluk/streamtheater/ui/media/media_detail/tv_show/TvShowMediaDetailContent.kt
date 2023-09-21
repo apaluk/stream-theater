@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -71,22 +72,21 @@ fun TvShowMediaDetailContent(
     onSelectedSeasonIndex: (Int) -> Unit = {},
 ) {
     val mediaDetailTvShow = tvShowUiState.tvShow
-    val showSeasonSelectorDialog = remember { mutableStateOf(false) }
-    val generalInfoText by remember { mutableStateOf("") }.apply {
-        value = tvShowUiState.generalInfoText()
-    }
+    var showSeasonSelectorDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val generalInfoText by remember { mutableStateOf(tvShowUiState.generalInfoText(context)) }
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         tvShowUiState.posterData?.let { posterData ->
             MediaDetailPoster(
                 imageUrl = posterData.imageUrl,
                 onPlay = { onPlayDefault() },
-                bottomStartTexts = listOf(
+                bottomTexts = listOf(
                     posterData.episodeNumber,
                     posterData.episodeName
                 ),
                 duration = posterData.duration,
                 progress = posterData.progress,
-                showPlayButton = posterData.showPlayButton
+                mainButtonAction = posterData.mainButtonAction
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -104,7 +104,7 @@ fun TvShowMediaDetailContent(
             tvShowUiState.selectedSeasonName()?.let { seasonName ->
                 DropDownSelector(
                     text = seasonName,
-                    onClick = { showSeasonSelectorDialog.value = true }
+                    onClick = { showSeasonSelectorDialog = true }
                 )
             }
         }
@@ -123,15 +123,15 @@ fun TvShowMediaDetailContent(
         )
         Spacer(modifier = Modifier.height(64.dp))
     }
-    if (showSeasonSelectorDialog.value) {
+    if (showSeasonSelectorDialog) {
         tvShowUiState.seasons?.let { seasons ->
             SelectSeasonDialog(
                 seasons = seasons,
                 onSeasonIndexSelected = {
                     onSelectedSeasonIndex(it)
-                    showSeasonSelectorDialog.value = false
+                    showSeasonSelectorDialog = false
                 },
-                onDismiss = { showSeasonSelectorDialog.value = false }
+                onDismiss = { showSeasonSelectorDialog = false }
             )
         }
     }

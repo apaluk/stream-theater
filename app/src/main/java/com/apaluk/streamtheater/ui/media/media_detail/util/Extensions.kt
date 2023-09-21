@@ -1,5 +1,6 @@
 package com.apaluk.streamtheater.ui.media.media_detail.util
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import com.apaluk.streamtheater.R
@@ -12,6 +13,7 @@ import com.apaluk.streamtheater.domain.model.media.MediaDetailTvShow
 import com.apaluk.streamtheater.domain.model.media.MediaProgress
 import com.apaluk.streamtheater.domain.model.media.TvShowEpisode
 import com.apaluk.streamtheater.domain.model.media.TvShowSeason
+import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailScreenUiState
 import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailUiState
@@ -27,7 +29,8 @@ fun MediaDetail.toMediaDetailUiState(): MediaDetailUiState =
         is MediaDetailMovie -> MovieMediaDetailUiState(movie = this)
         is MediaDetailTvShow -> TvShowMediaDetailUiState(
             tvShow = this,
-            posterData = TvShowPosterData(imageUrl = imageUrl)
+            posterData = TvShowPosterData(imageUrl = imageUrl),
+            episodesUiState = UiState.Loading   // in this phase we have no episodes yet
         )
     }
 
@@ -103,9 +106,7 @@ fun TvShowSeason.requireName(): String =
 @ReadOnlyComposable
 fun TvShowMediaDetailUiState.selectedSeasonName(): String? = selectedSeason()?.requireName()
 
-@Composable
-@ReadOnlyComposable
-fun TvShowMediaDetailUiState.generalInfoText(): String {
+fun TvShowMediaDetailUiState.generalInfoText(context: Context): String {
     val info = mutableListOf<String>()
     val seasonYears = seasons?.map { it.year }?.sortedBy { it?.toInt() ?: 0 }
     if (seasonYears.isNullOrEmpty().not()) {
@@ -121,7 +122,7 @@ fun TvShowMediaDetailUiState.generalInfoText(): String {
         episodes?.getOrNull(0)?.year?.let { info.add(it) }
     }
     if (seasons.isNullOrEmpty().not()) {
-        info.add(stringResourceSafe(id = R.string.st_tv_show_count_of_seasons, seasons?.size!!))
+        info.add(context.getString(R.string.st_tv_show_count_of_seasons, seasons?.size!!))
     }
     tvShow.genre.commaSeparatedList(3)?.let { info.add(it) }
     return info.joinToString(separator = MEDIA_INFO_SEPARATOR)

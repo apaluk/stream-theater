@@ -16,6 +16,7 @@ import com.apaluk.streamtheater.domain.use_case.media.GetStreamsUiStateUseCase
 import com.apaluk.streamtheater.domain.use_case.media.UpdateWatchHistoryOnStartStreamUseCase
 import com.apaluk.streamtheater.ui.common.util.toUiState
 import com.apaluk.streamtheater.ui.common.viewmodel.BaseViewModel
+import com.apaluk.streamtheater.ui.media.media_detail.common.MediaDetailPosterMainAction
 import com.apaluk.streamtheater.ui.media.media_detail.tv_show.TvShowPosterData
 import com.apaluk.streamtheater.ui.media.media_detail.util.relativeProgress
 import com.apaluk.streamtheater.ui.media.media_detail.util.seasonEpisodeText
@@ -133,7 +134,10 @@ class MediaDetailViewModel @Inject constructor(
                     duration = episode.duration,
                     imageUrl = episode.imageUrl ?: season?.imageUrl ?: tvShowImage,
                     progress = episode.relativeProgress ?: 0f,
-                    showPlayButton = selectedStream != null,
+                    mainButtonAction = MediaDetailPosterMainAction.from(
+                        shouldShowButton = selectedStream != null,
+                        isMediaWatched = episode.progress?.isWatched == true
+                    ),
                 )
             }.collect { posterData ->
                 updateTvShowUiState { it.copy(posterData = posterData) }

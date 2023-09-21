@@ -19,6 +19,7 @@
     <string name="st_search_empty_results">No results found</string>
 
     <string name="st_media_play">Play</string>
+    <string name="st_media_restart">Restart</string>
     <string name="st_media_director">Director</string>
     <string name="st_media_cast">Cast</string>
     <string name="st_media_writer">Writer</string>
