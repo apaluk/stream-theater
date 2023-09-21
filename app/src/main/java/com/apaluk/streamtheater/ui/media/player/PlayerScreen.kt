@@ -89,6 +89,7 @@ fun VideoPlayer(
     seekToPosition: Long? = null,
     onPlayerScreenAction: (PlayerScreenAction) -> Unit = {},
     onMediaAction: (MediaAction) -> Unit = {},
+    onNavigateUp: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val playerState = rememberPlayerState()
@@ -167,8 +168,14 @@ fun VideoPlayer(
     if(playerState.isPlayerControlsFullyVisible) {
         VideoPlayerOverlay(
             uiState = uiState,
-            onSkipToPrevious = { onMediaAction(MediaAction.SkipToPreviousVideo) },
-            onSkipToNext = { onMediaAction(MediaAction.SkipToNextVideo) },
+            onSkipToPrevious = {
+                onMediaAction(MediaAction.SkipToPreviousVideo)
+                onNavigateUp()
+            },
+            onSkipToNext = {
+                onMediaAction(MediaAction.SkipToNextVideo)
+                onNavigateUp()
+            },
         )
     }
     OnLifecycleEvent { _, event ->
@@ -220,7 +227,7 @@ fun VideoPlayerOverlay(
                     modifier = Modifier
                         .padding(start = 32.dp, end = 32.dp, bottom = bottomPadding)
                         .align(Alignment.CenterVertically),
-                    onClick = { onSkipToPrevious() }
+                    onClick = onSkipToPrevious
                 ) {
                     Icon(
                         modifier = Modifier.size(32.dp),
@@ -243,7 +250,7 @@ fun VideoPlayerOverlay(
                     modifier = Modifier
                         .padding(start = 32.dp, end = 32.dp, bottom = bottomPadding)
                         .align(Alignment.CenterVertically),
-                    onClick = { onSkipToNext() }
+                    onClick = onSkipToNext
                 ) {
                     Icon(
                         modifier = Modifier.size(32.dp),

@@ -7,6 +7,7 @@ import com.apaluk.streamtheater.core.util.isNullOrEmptyList
 import com.apaluk.streamtheater.core.util.mapList
 import com.apaluk.streamtheater.domain.model.media.FindNeighbourSeasonEpisodeResult
 import com.apaluk.streamtheater.domain.model.media.MediaStream
+import com.apaluk.streamtheater.domain.model.media.SeasonEpisodeNeighbourType
 import com.apaluk.streamtheater.domain.model.media.StreamsMediaType
 import com.apaluk.streamtheater.domain.use_case.media.FindNeighbourSeasonEpisodeUseCase
 import com.apaluk.streamtheater.domain.use_case.media.GetMediaDetailUiStateUseCase
@@ -47,10 +48,10 @@ import javax.inject.Inject
 @HiltViewModel
 class MediaDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    getMediaDetailUiState: GetMediaDetailUiStateUseCase,
-    getTvShowSeasonEpisodes: GetSeasonEpisodesWithWatchHistoryUpdatesUseCase,
+    private val getMediaDetailUiState: GetMediaDetailUiStateUseCase,
+    private val getTvShowSeasonEpisodes: GetSeasonEpisodesWithWatchHistoryUpdatesUseCase,
     private val updateWatchHistoryOnStartStream: UpdateWatchHistoryOnStartStreamUseCase,
-    getStreamsUiState: GetStreamsUiStateUseCase,
+    private val getStreamsUiState: GetStreamsUiStateUseCase,
     private val findNeighbourSeasonEpisodeUseCase: FindNeighbourSeasonEpisodeUseCase,
     private val getSeasonEpisodesUseCase: GetSeasonEpisodesUseCase
 ): BaseViewModel<MediaDetailScreenUiState, MediaDetailEvent, MediaDetailAction>() {
@@ -85,83 +86,12 @@ class MediaDetailViewModel @Inject constructor(
     get() = if(selectedEpisode.value != null) StreamsMediaType.TvShowEpisode else StreamsMediaType.Movie
 
     init {
-        // get media detail UI state
-        viewModelScope.launch {
-            getMediaDetailUiState(mediaId).collect { mediaDetailUiStateResource ->
-                emitUiState {
-                    it.copy(
-                        uiState = mediaDetailUiStateResource.toUiState(),
-                        mediaDetailUiState = mediaDetailUiStateResource.data
-                    )
-                }
-            }
-        }
-        // get streams
-        viewModelScope.launch {
-            mediaIdForStreams.collectLatest { childMediaId ->
-                getStreamsUiState(childMediaId, mediaId, streamsMediaType).collect { streamsUiState ->
-                    emitUiState { it.copy(streamsUiState = streamsUiState) }
-                }
-            }
-        }
-        // get episodes on season select
-        viewModelScope.launch {
-            selectedSeason.filterNotNull().collectLatest { season ->
-                getTvShowSeasonEpisodes(mediaId, season.id).collect { seasonEpisodes ->
-                    if(isJumpingToNeighbourEpisode.value.not()) {
-                        updateTvShowUiState {
-                            it.copy(
-                                episodes = seasonEpisodes.data?.episodes,
-                                selectedEpisodeIndex = seasonEpisodes.data?.selectedEpisodeIndex,
-                                episodesUiState = seasonEpisodes.toUiState()
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        // update poster data according to selected episode
-        viewModelScope.launch {
-            combine(
-                selectedSeason,
-                selectedEpisode.filterNotNull(),
-                uiState.map { it.streamsUiState?.selectedStreamId },
-                uiState.map { it.tvShowUiState?.tvShow?.imageUrl}
-            ) { season, episode, selectedStream, tvShowImage ->
-                TvShowPosterData(
-                    episodeNumber = seasonEpisodeText(season, episode),
-                    episodeName = episode.title,
-                    duration = episode.duration,
-                    imageUrl = episode.imageUrl ?: season?.imageUrl ?: tvShowImage,
-                    progress = episode.relativeProgress ?: 0f,
-                    mainButtonAction = MediaDetailPosterMainAction.from(
-                        shouldShowButton = selectedStream != null,
-                        isMediaWatched = episode.progress?.isWatched == true
-                    ),
-                )
-            }.collect { posterData ->
-                updateTvShowUiState { it.copy(posterData = posterData) }
-            }
-        }
-        // fix episodes with no image
-        viewModelScope.launch {
-            uiState
-                .map { it.mediaDetailUiState}
-                .filterIsInstance<TvShowMediaDetailUiState>()
-                .mapNotNull { it.episodes }
-                .filter { it.any { episode -> episode.imageUrl.isNullOrEmpty() } }
-                .mapList { episode ->
-                    if(episode.imageUrl == null)
-                        episode.copy(imageUrl = uiState.value.tvShowUiState?.posterData?.imageUrl)
-                    else episode
-                }
-                .filterNot { // don't continue if any imageUrl is still null
-                    it.any { episode -> episode.imageUrl.isNullOrEmpty() }
-                }
-                .collect { episodes ->
-                    updateTvShowUiState { it.copy(episodes = episodes) }
-                }
-        }
+        updateMediaDetailUiStateContinuously()
+        updateStreamsOnMediaSelect()
+        updateEpisodesOnSeasonSelect()
+        updatePosterOnEpisodeSelect()
+        fixEpisodeImageWhenImageMissing()
+        updateNeighbourEpisodesOnEpisodeSelect()
     }
 
     override fun handleAction(action: MediaDetailAction) {
@@ -170,8 +100,7 @@ class MediaDetailViewModel @Inject constructor(
             is MediaDetailAction.PlayStream -> onPlayStream(action)
             is MediaDetailAction.SelectSeasonIndex -> onSelectSeasonIndex(action)
             is MediaDetailAction.SelectEpisodeIndex -> onSelectEpisodeIndex(action)
-            MediaDetailAction.SkipToNextVideo -> onSkipToNextVideo()
-            MediaDetailAction.SkipToPreviousVideo -> onSkipToPreviousVideo()
+            is MediaDetailAction.SkipToNeighbourVideo -> onSkipToNeighbourVideo(action)
         }
     }
 
@@ -213,26 +142,25 @@ class MediaDetailViewModel @Inject constructor(
         }
     }
 
-    private fun onSkipToPreviousVideo() {
-        onSkipToNeighbourVideo(FindNeighbourSeasonEpisodeUseCase.NeighbourType.Previous)
-    }
-
-    private fun onSkipToNextVideo() {
-        onSkipToNeighbourVideo(FindNeighbourSeasonEpisodeUseCase.NeighbourType.Next)
-    }
-
-    private fun onSkipToNeighbourVideo(neighbourType: FindNeighbourSeasonEpisodeUseCase.NeighbourType) {
+    private fun onSkipToNeighbourVideo(action: MediaDetailAction.SkipToNeighbourVideo) {
         viewModelScope.launch {
             try {
                 isJumpingToNeighbourEpisode.value = true
-                emitUiState { it.copy(showSeekingProgressBar = true) }
-                val neighbourSeasonEpisode = findNeighbourSeasonEpisode(neighbourType) ?: return@launch
-                emitUiState { it.copy(streamsUiState = null) }
+
+                val neighbourSeasonEpisode = when (action.neighbourType) {
+                    SeasonEpisodeNeighbourType.Previous -> uiState.value.tvShowUiState?.previousEpisode
+                    SeasonEpisodeNeighbourType.Next -> uiState.value.tvShowUiState?.nextEpisode
+                } ?: run {
+                    Timber.e("Neighbour episode was not found")
+                    return@launch
+                }
+
+                emitUiState { it.copy(streamsUiState = null, showSeekingProgressBar = true) }
 
                 withTimeout(10_000) {
                     if (neighbourSeasonEpisode.seasonId != null && neighbourSeasonEpisode.seasonHasChanged) {
                         updateTvShowUiState {
-                            it.copy(selectedSeasonIndex = neighbourSeasonEpisode.seasonIndex,)
+                            it.copy(selectedSeasonIndex = neighbourSeasonEpisode.seasonIndex)
                         }
                         // wait until season is selected
                         selectedSeason.first { it?.id == neighbourSeasonEpisode.seasonId }
@@ -252,15 +180,18 @@ class MediaDetailViewModel @Inject constructor(
                     }
                     // wait until episode is selected
                     selectedEpisode.first { it?.id == neighbourSeasonEpisode.episodeId }
-                    // wait until stream is selected
-                    uiState.first { it.streamsUiState?.selectedStreamId != null }
-                    onPlayDefault()
+
+                    if (action.playWhenReady) {
+                        // wait until stream is selected
+                        uiState.first { it.streamsUiState?.selectedStreamId != null }
+                        onPlayDefault()
+                    }
                 }
                 emitUiState { it.copy(showSeekingProgressBar = false) }
 
-                // set isJumpingToNeighbourEpisode to false after 5s delay to prevent watch history
+                // set isJumpingToNeighbourEpisode to false after a delay to prevent watch history
                 // updates from setting selected episode
-                delay(5_000)
+                delay(1_000)
             } catch (e: CancellationException) {
                 Timber.w(e)
             }
@@ -276,15 +207,120 @@ class MediaDetailViewModel @Inject constructor(
         emitUiState { it.copy(mediaDetailUiState = newUiStateProducer(tvShowUiState)) }
     }
 
+    private fun updateMediaDetailUiStateContinuously() {
+        viewModelScope.launch {
+            getMediaDetailUiState(mediaId).collect { mediaDetailUiStateResource ->
+                emitUiState {
+                    it.copy(
+                        uiState = mediaDetailUiStateResource.toUiState(),
+                        mediaDetailUiState = mediaDetailUiStateResource.data
+                    )
+                }
+            }
+        }
+    }
+
+    private fun updateStreamsOnMediaSelect() {
+        viewModelScope.launch {
+            mediaIdForStreams.collectLatest { childMediaId ->
+                getStreamsUiState(childMediaId, mediaId, streamsMediaType).collect { streamsUiState ->
+                    emitUiState { it.copy(streamsUiState = streamsUiState) }
+                }
+            }
+        }
+    }
+
+    private fun updateEpisodesOnSeasonSelect() {
+        viewModelScope.launch {
+            selectedSeason.filterNotNull().collectLatest { season ->
+                getTvShowSeasonEpisodes(mediaId, season.id).collect { seasonEpisodes ->
+                    if(isJumpingToNeighbourEpisode.value.not()) {
+                        updateTvShowUiState {
+                            it.copy(
+                                episodes = seasonEpisodes.data?.episodes,
+                                selectedEpisodeIndex = seasonEpisodes.data?.selectedEpisodeIndex,
+                                episodesUiState = seasonEpisodes.toUiState()
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updatePosterOnEpisodeSelect() {
+        viewModelScope.launch {
+            combine(
+                selectedSeason,
+                selectedEpisode.filterNotNull(),
+                uiState.map { it.streamsUiState?.selectedStreamId },
+                uiState.map { it.tvShowUiState?.tvShow?.imageUrl}
+            ) { season, episode, selectedStream, tvShowImage ->
+                TvShowPosterData(
+                    episodeNumber = seasonEpisodeText(season, episode),
+                    episodeName = episode.title,
+                    duration = episode.duration,
+                    imageUrl = episode.imageUrl ?: season?.imageUrl ?: tvShowImage,
+                    progress = episode.relativeProgress ?: 0f,
+                    mainButtonAction = MediaDetailPosterMainAction.from(
+                        shouldShowButton = selectedStream != null,
+                        isMediaWatched = episode.progress?.isWatched == true
+                    ),
+                )
+            }.collect { posterData ->
+                updateTvShowUiState { it.copy(posterData = posterData) }
+            }
+        }
+    }
+
+    private fun fixEpisodeImageWhenImageMissing() {
+        viewModelScope.launch {
+            uiState
+                .map { it.mediaDetailUiState}
+                .filterIsInstance<TvShowMediaDetailUiState>()
+                .mapNotNull { it.episodes }
+                .filter { it.any { episode -> episode.imageUrl.isNullOrEmpty() } }
+                .mapList { episode ->
+                    if(episode.imageUrl == null)
+                        episode.copy(imageUrl = uiState.value.tvShowUiState?.posterData?.imageUrl)
+                    else episode
+                }
+                .filterNot { // don't continue if any imageUrl is still null
+                    it.any { episode -> episode.imageUrl.isNullOrEmpty() }
+                }
+                .collect { episodes ->
+                    updateTvShowUiState { it.copy(episodes = episodes) }
+                }
+        }
+    }
+
+    private fun updateNeighbourEpisodesOnEpisodeSelect() {
+        viewModelScope.launch {
+            selectedEpisode.filterNotNull().collectLatest { _ ->
+                updateTvShowUiState { it.copy(previousEpisode = null, nextEpisode = null) }
+                val findPreviousEpisodeJob = launch {
+                    findNeighbourSeasonEpisode(SeasonEpisodeNeighbourType.Previous)
+                        ?.let { previousEpisode -> updateTvShowUiState { it.copy(previousEpisode = previousEpisode) } }
+                }
+                val findNextEpisodeJob = launch {
+                    findNeighbourSeasonEpisode(SeasonEpisodeNeighbourType.Next)
+                        ?.let { nextEpisode -> updateTvShowUiState { it.copy(nextEpisode = nextEpisode) } }
+                }
+                findPreviousEpisodeJob.join()
+                findNextEpisodeJob.join()
+            }
+        }
+    }
+
     private suspend fun findNeighbourSeasonEpisode(
-        neighbourType: FindNeighbourSeasonEpisodeUseCase.NeighbourType
+        seasonEpisodeNeighbourType: SeasonEpisodeNeighbourType
     ): FindNeighbourSeasonEpisodeResult? {
         return findNeighbourSeasonEpisodeUseCase(
             seasons = uiState.value.tvShowUiState?.seasons,
             currentSeasonIndex = uiState.value.tvShowUiState?.selectedSeasonIndex,
             currentEpisodes = uiState.value.tvShowUiState?.episodes ?: return null,
             currentEpisodeIndex = uiState.value.tvShowUiState?.selectedEpisodeIndex ?: return null,
-            neighbourType = neighbourType
+            seasonEpisodeNeighbourType = seasonEpisodeNeighbourType
         )
     }
 }

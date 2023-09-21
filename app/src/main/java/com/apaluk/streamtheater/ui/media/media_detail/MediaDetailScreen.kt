@@ -59,8 +59,10 @@ fun MediaDetailScreen(
     }
     EventHandler(mediaViewModel.event) { event ->
         when (event) {
-            is MediaEvent.SkipToNextVideo -> viewModel.onAction(MediaDetailAction.SkipToNextVideo)
-            is MediaEvent.SkipToPreviousVideo -> viewModel.onAction(MediaDetailAction.SkipToPreviousVideo)
+            is MediaEvent.SkipToNextVideo ->
+                viewModel.onAction(MediaDetailAction.SkipToNeighbourVideo(SeasonEpisodeNeighbourType.Next, playWhenReady = true))
+            is MediaEvent.SkipToPreviousVideo ->
+                viewModel.onAction(MediaDetailAction.SkipToNeighbourVideo(SeasonEpisodeNeighbourType.Previous, playWhenReady = true))
         }
     }
 }
@@ -131,7 +133,9 @@ fun MediaDetailContent(
             modifier = modifier,
             onPlayDefault = { onMediaDetailAction(MediaDetailAction.PlayDefault) },
             onSelectEpisodeIndex = { index -> onMediaDetailAction(MediaDetailAction.SelectEpisodeIndex(index)) },
-            onSelectedSeasonIndex = { index -> onMediaDetailAction(MediaDetailAction.SelectSeasonIndex(index)) }
+            onSelectedSeasonIndex = { index -> onMediaDetailAction(MediaDetailAction.SelectSeasonIndex(index)) },
+            onPreviousClicked = { onMediaDetailAction(MediaDetailAction.SkipToNeighbourVideo(SeasonEpisodeNeighbourType.Previous, playWhenReady = false)) },
+            onNextClicked = { onMediaDetailAction(MediaDetailAction.SkipToNeighbourVideo(SeasonEpisodeNeighbourType.Next, playWhenReady = false)) }
         )
     }
 }

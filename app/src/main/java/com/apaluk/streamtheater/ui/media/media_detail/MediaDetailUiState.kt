@@ -1,8 +1,10 @@
 package com.apaluk.streamtheater.ui.media.media_detail
 
+import com.apaluk.streamtheater.domain.model.media.FindNeighbourSeasonEpisodeResult
 import com.apaluk.streamtheater.domain.model.media.MediaDetailMovie
 import com.apaluk.streamtheater.domain.model.media.MediaDetailTvShow
 import com.apaluk.streamtheater.domain.model.media.MediaStream
+import com.apaluk.streamtheater.domain.model.media.SeasonEpisodeNeighbourType
 import com.apaluk.streamtheater.domain.model.media.TvShowEpisode
 import com.apaluk.streamtheater.domain.model.media.TvShowSeason
 import com.apaluk.streamtheater.ui.common.util.UiState
@@ -30,6 +32,8 @@ data class TvShowMediaDetailUiState(
     val seasons: List<TvShowSeason>? = null,
     val episodes: List<TvShowEpisode>? = null,
     val posterData: TvShowPosterData? = null,
+    val previousEpisode: FindNeighbourSeasonEpisodeResult? = null,
+    val nextEpisode: FindNeighbourSeasonEpisodeResult? = null
 ): MediaDetailUiState()
 
 sealed class MediaDetailAction {
@@ -37,8 +41,10 @@ sealed class MediaDetailAction {
     data class PlayStream(val stream: MediaStream): MediaDetailAction()
     data class SelectSeasonIndex(val seasonIndex: Int): MediaDetailAction()
     data class SelectEpisodeIndex(val episodeIndex: Int): MediaDetailAction()
-    object SkipToPreviousVideo: MediaDetailAction()
-    object SkipToNextVideo: MediaDetailAction()
+    data class SkipToNeighbourVideo(
+        val neighbourType: SeasonEpisodeNeighbourType,
+        val playWhenReady: Boolean
+    ): MediaDetailAction()
 }
 
 data class StreamsUiState(

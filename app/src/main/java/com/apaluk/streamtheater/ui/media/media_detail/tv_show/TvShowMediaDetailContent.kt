@@ -70,6 +70,8 @@ fun TvShowMediaDetailContent(
     onPlayDefault: () -> Unit = {},
     onSelectEpisodeIndex: (Int) -> Unit = {},
     onSelectedSeasonIndex: (Int) -> Unit = {},
+    onPreviousClicked: () -> Unit = {},
+    onNextClicked: () -> Unit = {},
 ) {
     val mediaDetailTvShow = tvShowUiState.tvShow
     var showSeasonSelectorDialog by remember { mutableStateOf(false) }
@@ -79,14 +81,18 @@ fun TvShowMediaDetailContent(
         tvShowUiState.posterData?.let { posterData ->
             MediaDetailPoster(
                 imageUrl = posterData.imageUrl,
-                onPlay = { onPlayDefault() },
+                onMainButtonClicked = onPlayDefault,
                 bottomTexts = listOf(
                     posterData.episodeNumber,
                     posterData.episodeName
                 ),
                 duration = posterData.duration,
                 progress = posterData.progress,
-                mainButtonAction = posterData.mainButtonAction
+                mainButtonAction = posterData.mainButtonAction,
+                showPreviousButton = tvShowUiState.previousEpisode != null,
+                showNextButton = tvShowUiState.nextEpisode != null,
+                onPreviousClicked = onPreviousClicked,
+                onNextClicked = onNextClicked
             )
         }
         Spacer(modifier = Modifier.height(24.dp))

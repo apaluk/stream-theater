@@ -47,7 +47,7 @@ fun MovieMediaDetailContent(
         MediaDetailPoster(
             imageUrl = mediaDetailMovie.imageUrl,
             duration = mediaDetailMovie.duration,
-            onPlay = { onPlayDefault() },
+            onMainButtonClicked = onPlayDefault,
             progress = mediaDetailMovie.relativeProgress,
             mainButtonAction = MediaDetailPosterMainAction.from(showPlayButton, mediaDetailMovie.progress?.isWatched == true)
         )

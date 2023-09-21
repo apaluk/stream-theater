@@ -29,6 +29,8 @@
     <string name="st_tv_show_episode_number">Episode %d</string>
     <string name="st_media_error_no_seasons_or_episodes">Could not get seasons nor episodes for this TV show.</string>
     <string name="st_media_error_no_episodes">Could not get episodes for this TV show.</string>
+    <string name="st_media_previous">Previous</string>
+    <string name="st_media_next">Next</string>
 
     <string name="st_dashboard_continue_watching">Continue watching</string>
     <string name="st_dashboard_remove_media_from_history">Remove from history?</string>
