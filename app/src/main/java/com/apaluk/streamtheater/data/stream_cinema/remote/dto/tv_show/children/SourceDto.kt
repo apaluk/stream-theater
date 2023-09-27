@@ -13,7 +13,7 @@ data class SourceDto(
     @Json(name = "children_count")
     val childrenCount: Int,
     @Json(name = "collections")
-    val collections: List<Any>,
+    val collections: List<Any>?,
     @Json(name = "i18n_info_labels")
     val i18nInfoLabels: List<com.apaluk.streamtheater.data.stream_cinema.remote.dto.search.I18nInfoLabelDto>,
     @Json(name = "info_labels")
@@ -25,7 +25,7 @@ data class SourceDto(
     @Json(name = "last_children_date_added")
     val lastChildrenDateAdded: List<LastChildrenDateAddedDto>?,
     @Json(name = "networks")
-    val networks: List<String>,
+    val networks: List<String>?,
     @Json(name = "parent_id")
     val parentId: String,
     @Json(name = "parent_info_labels")
@@ -35,7 +35,7 @@ data class SourceDto(
     @Json(name = "popularity")
     val popularity: Double,
     @Json(name = "premieres")
-    val premieres: List<PremiereDto>,
+    val premieres: List<PremiereDto>?,
     @Json(name = "ratings")
     val ratings: RatingsDto?,
     @Json(name = "root_parent")
