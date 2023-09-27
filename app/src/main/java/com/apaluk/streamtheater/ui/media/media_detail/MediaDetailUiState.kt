@@ -63,6 +63,7 @@ data class PlayStreamParams(
 
 sealed class MediaDetailEvent {
     data class PlayStream(val params: PlayStreamParams): MediaDetailEvent()
+    object ScrollToTop: MediaDetailEvent()
 }
 
 enum class TvShowMediaDetailsTab(val index: Int) {

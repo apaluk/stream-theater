@@ -1,6 +1,7 @@
 package com.apaluk.streamtheater.ui.media.media_detail.movie
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,10 +41,11 @@ fun MovieMediaDetailContent(
     showPlayButton: Boolean,
     modifier: Modifier = Modifier,
     onPlayDefault: () -> Unit = {},
+    scrollState: ScrollState = rememberScrollState()
 ) {
     val mediaDetailMovie = movieUiState.movie
     Column(
-        modifier = modifier.verticalScroll(rememberScrollState())
+        modifier = modifier.verticalScroll(scrollState)
     ) {
         MediaDetailPoster(
             imageUrl = mediaDetailMovie.imageUrl,

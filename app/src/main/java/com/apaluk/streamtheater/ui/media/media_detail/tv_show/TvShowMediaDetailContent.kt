@@ -2,6 +2,7 @@ package com.apaluk.streamtheater.ui.media.media_detail.tv_show
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -78,11 +79,12 @@ fun TvShowMediaDetailContent(
     onSelectedSeasonIndex: (Int) -> Unit = {},
     onPreviousClicked: () -> Unit = {},
     onNextClicked: () -> Unit = {},
-    onContentTabSelected: (TvShowMediaDetailsTab) -> Unit = {}
+    onContentTabSelected: (TvShowMediaDetailsTab) -> Unit = {},
+    scrollState: ScrollState = rememberScrollState()
 ) {
     val mediaDetailTvShow = tvShowUiState.tvShow
     var showSeasonSelectorDialog by remember { mutableStateOf(false) }
-    Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+    Column(modifier = modifier.verticalScroll(scrollState)) {
         tvShowUiState.posterData?.let { posterData ->
             MediaDetailPoster(
                 imageUrl = posterData.imageUrl,

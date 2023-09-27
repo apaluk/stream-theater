@@ -160,6 +160,9 @@ class MediaDetailViewModel @Inject constructor(
 
                 withTimeout(10_000) {
                     if (neighbourSeasonEpisode.seasonId != null && neighbourSeasonEpisode.seasonHasChanged) {
+                        if (neighbourSeasonEpisode.episodeIndex == 0) {
+                            emitEvent(MediaDetailEvent.ScrollToTop)
+                        }
                         updateTvShowUiState {
                             it.copy(selectedSeasonIndex = neighbourSeasonEpisode.seasonIndex)
                         }
@@ -192,7 +195,7 @@ class MediaDetailViewModel @Inject constructor(
 
                 // set isJumpingToNeighbourEpisode to false after a delay to prevent watch history
                 // updates from setting selected episode
-                delay(1_000)
+                delay(500)
             } catch (e: CancellationException) {
                 Timber.w(e)
             }

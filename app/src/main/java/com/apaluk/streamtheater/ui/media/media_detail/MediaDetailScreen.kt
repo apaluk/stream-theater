@@ -2,7 +2,9 @@
 
 package com.apaluk.streamtheater.ui.media.media_detail
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -36,6 +38,7 @@ fun MediaDetailScreen(
     mediaViewModel: MediaViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val contentScrollState = rememberScrollState()
     TopAppBar(
         navigationIcon = {
             BackButton(onClick = { onNavigateUp() })
@@ -46,7 +49,8 @@ fun MediaDetailScreen(
         MediaDetailScreenContent(
             modifier = modifier,
             uiState = uiState,
-            onMediaDetailAction = viewModel::onAction
+            onMediaDetailAction = viewModel::onAction,
+            contentScrollState = contentScrollState
         )
     }
     EventHandler(viewModel.event) { event ->
@@ -55,6 +59,7 @@ fun MediaDetailScreen(
                 mediaViewModel.playStreamParams.value = event.params
                 onPlayStream()
             }
+            MediaDetailEvent.ScrollToTop -> contentScrollState.scrollTo(0)
         }
     }
     EventHandler(mediaViewModel.event) { event ->
@@ -71,7 +76,8 @@ fun MediaDetailScreen(
 fun MediaDetailScreenContent(
     uiState: MediaDetailScreenUiState,
     modifier: Modifier = Modifier,
-    onMediaDetailAction: (MediaDetailAction) -> Unit = {}
+    onMediaDetailAction: (MediaDetailAction) -> Unit = {},
+    contentScrollState: ScrollState = rememberScrollState()
 ) {
     Row(
         modifier = modifier.fillMaxSize(),
@@ -86,7 +92,8 @@ fun MediaDetailScreenContent(
                     .fillMaxHeight()
                     .padding(start = 76.dp, end = 24.dp)
                     .align(Alignment.Top),
-                onMediaDetailAction = onMediaDetailAction
+                onMediaDetailAction = onMediaDetailAction,
+                scrollState = contentScrollState
             )
         }
         Box(
@@ -119,14 +126,16 @@ fun MediaDetailContent(
     mediaDetailUiState: MediaDetailUiState,
     showPlayButton: Boolean,
     modifier: Modifier = Modifier,
-    onMediaDetailAction: (MediaDetailAction) -> Unit = {}
+    onMediaDetailAction: (MediaDetailAction) -> Unit = {},
+    scrollState: ScrollState = rememberScrollState()
 ) {
     when(mediaDetailUiState) {
         is MovieMediaDetailUiState -> MovieMediaDetailContent(
             movieUiState = mediaDetailUiState,
             showPlayButton = showPlayButton,
             modifier = modifier,
-            onPlayDefault = { onMediaDetailAction(MediaDetailAction.PlayDefault) }
+            onPlayDefault = { onMediaDetailAction(MediaDetailAction.PlayDefault) },
+            scrollState = scrollState
         )
         is TvShowMediaDetailUiState -> TvShowMediaDetailContent(
             tvShowUiState = mediaDetailUiState,
@@ -136,7 +145,8 @@ fun MediaDetailContent(
             onSelectedSeasonIndex = { index -> onMediaDetailAction(MediaDetailAction.SelectSeasonIndex(index)) },
             onPreviousClicked = { onMediaDetailAction(MediaDetailAction.SkipToNeighbourVideo(SeasonEpisodeNeighbourType.Previous, playWhenReady = false)) },
             onNextClicked = { onMediaDetailAction(MediaDetailAction.SkipToNeighbourVideo(SeasonEpisodeNeighbourType.Next, playWhenReady = false)) },
-            onContentTabSelected = { tab -> onMediaDetailAction(MediaDetailAction.SelectContentTab(tab)) }
+            onContentTabSelected = { tab -> onMediaDetailAction(MediaDetailAction.SelectContentTab(tab)) },
+            scrollState = scrollState
         )
     }
 }
