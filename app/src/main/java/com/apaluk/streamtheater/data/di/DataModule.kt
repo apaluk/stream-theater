@@ -15,6 +15,9 @@ import com.apaluk.streamtheater.data.stream_cinema.StreamCinemaRepositoryImpl
 import com.apaluk.streamtheater.data.stream_cinema.remote.StreamCinemaApi
 import com.apaluk.streamtheater.data.stream_cinema.remote.adapter.MediaTypeAdapter
 import com.apaluk.streamtheater.data.stream_cinema.remote.adapter.TvShowChildTypeAdapter
+ import com.apaluk.streamtheater.data.stream_cinema.remote.mapper.StreamCinemaMediaMapper
+import com.apaluk.streamtheater.data.stream_cinema.remote.mapper.StreamCinemaSearchMapper
+import com.apaluk.streamtheater.data.stream_cinema.remote.mapper.StreamCinemaStreamsMapper
 import com.apaluk.streamtheater.data.webshare.remote.WebShareApi
 import com.apaluk.streamtheater.domain.repository.MediaInfoRepository
 import com.apaluk.streamtheater.domain.repository.SearchHistoryRepository
@@ -99,8 +102,12 @@ object DataModule {
 
     @Provides
     fun provideStreamCinemaRepository(
-        streamCinemaApi: StreamCinemaApi
-    ): StreamCinemaRepository = StreamCinemaRepositoryImpl(streamCinemaApi)
+        streamCinemaApi: StreamCinemaApi,
+        streamCinemaMediaMapper: StreamCinemaMediaMapper,
+        streamCinemaSearchMapper: StreamCinemaSearchMapper,
+        streamCinemaStreamsMapper: StreamCinemaStreamsMapper
+    ): StreamCinemaRepository =
+        StreamCinemaRepositoryImpl(streamCinemaApi, streamCinemaMediaMapper, streamCinemaSearchMapper, streamCinemaStreamsMapper)
 
     @Provides
     fun provideSearchHistoryRepository(

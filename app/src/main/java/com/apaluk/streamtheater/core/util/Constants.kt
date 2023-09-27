@@ -11,5 +11,7 @@ object Constants {
     const val VERY_LONG_ANIM_DURATION = 1_000
 
     const val CHAR_BULLET = '•'
-    const val CHAR_DASH = "\u2014"
+    //const val CHAR_DASH = "\u2014"
+
+    const val MEDIA_INFO_SEPARATOR = "  $CHAR_BULLET  "
 }

@@ -101,6 +101,7 @@ class MediaDetailViewModel @Inject constructor(
             is MediaDetailAction.SelectSeasonIndex -> onSelectSeasonIndex(action)
             is MediaDetailAction.SelectEpisodeIndex -> onSelectEpisodeIndex(action)
             is MediaDetailAction.SkipToNeighbourVideo -> onSkipToNeighbourVideo(action)
+            is MediaDetailAction.SelectContentTab -> onSelectContentTab(action)
         }
     }
 
@@ -200,6 +201,10 @@ class MediaDetailViewModel @Inject constructor(
                 isJumpingToNeighbourEpisode.value = false
             }
         }
+    }
+
+    private fun onSelectContentTab(action: MediaDetailAction.SelectContentTab) {
+        updateTvShowUiState { it.copy(selectedTab = action.tab) }
     }
 
     private fun updateTvShowUiState(newUiStateProducer: (TvShowMediaDetailUiState) -> TvShowMediaDetailUiState) {

@@ -6,7 +6,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -18,12 +17,11 @@ fun TextWithContrastBackground(
         text = text,
         modifier = modifier
             .background(
-                color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.background.copy(alpha = 0.63f),
                 shape = MaterialTheme.shapes.extraSmall
             )
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        style = MaterialTheme.typography.bodyMedium,
+        style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onBackground,
-        fontWeight = FontWeight.SemiBold
     )
 }

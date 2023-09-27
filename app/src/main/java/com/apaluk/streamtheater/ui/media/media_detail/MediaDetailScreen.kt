@@ -135,7 +135,8 @@ fun MediaDetailContent(
             onSelectEpisodeIndex = { index -> onMediaDetailAction(MediaDetailAction.SelectEpisodeIndex(index)) },
             onSelectedSeasonIndex = { index -> onMediaDetailAction(MediaDetailAction.SelectSeasonIndex(index)) },
             onPreviousClicked = { onMediaDetailAction(MediaDetailAction.SkipToNeighbourVideo(SeasonEpisodeNeighbourType.Previous, playWhenReady = false)) },
-            onNextClicked = { onMediaDetailAction(MediaDetailAction.SkipToNeighbourVideo(SeasonEpisodeNeighbourType.Next, playWhenReady = false)) }
+            onNextClicked = { onMediaDetailAction(MediaDetailAction.SkipToNeighbourVideo(SeasonEpisodeNeighbourType.Next, playWhenReady = false)) },
+            onContentTabSelected = { tab -> onMediaDetailAction(MediaDetailAction.SelectContentTab(tab)) }
         )
     }
 }

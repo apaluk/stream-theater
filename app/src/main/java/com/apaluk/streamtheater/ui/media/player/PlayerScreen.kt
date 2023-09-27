@@ -69,7 +69,8 @@ fun PlayerScreen(
                 uiState = uiState,
                 seekToPosition = uiState.seekToPosition,
                 onPlayerScreenAction = viewModel::onAction,
-                onMediaAction = mediaViewModel::onAction
+                onMediaAction = mediaViewModel::onAction,
+                onNavigateUp = onNavigateUp
             )
         }
     }

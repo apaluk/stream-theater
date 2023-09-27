@@ -9,6 +9,8 @@ import com.apaluk.streamtheater.domain.model.media.util.tryGetEpisodes
 import com.apaluk.streamtheater.domain.model.media.util.tryGetSeasons
 import com.apaluk.streamtheater.domain.repository.StreamCinemaRepository
 import com.apaluk.streamtheater.domain.repository.WatchHistoryRepository
+import com.apaluk.streamtheater.domain.use_case.media.util.generalInfoText
+import com.apaluk.streamtheater.domain.use_case.media.util.getYears
 import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.common.util.toUiState
 import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailUiState
@@ -38,7 +40,7 @@ class GetMediaDetailUiStateUseCase @Inject constructor(
         } else if (mediaDetailResource.data == null) {
             emit(Resource.Error())
         } else {
-            val mediaDetailUiState = mediaDetailResource.data.toMediaDetailUiState()
+            val mediaDetailUiState = mediaDetailResource.data.toMediaDetailUiState(resourcesManager)
             emit(Resource.Success(mediaDetailUiState))
             when(mediaDetailUiState) {
                 is MovieMediaDetailUiState -> {
@@ -71,8 +73,14 @@ class GetMediaDetailUiStateUseCase @Inject constructor(
                             if(seasons.data != null) {
                                 // we found seasons. Get selected season and update UI state
                                 val selectedSeasonIndex = getSelectedSeasonUseCase(mediaId, seasons.data)
+                                val years = seasons.data.getYears()
+                                val tvShowWithYears = mediaDetailUiState.tvShow.copy(
+                                    years = years,
+                                    infoText = mediaDetailUiState.tvShow.generalInfoText(resourcesManager, years)
+                                )
                                 emit(Resource.Success(
                                     mediaDetailUiState.copy(
+                                        tvShow = tvShowWithYears,
                                         seasons = seasons.data,
                                         selectedSeasonIndex = selectedSeasonIndex,
                                         episodesUiState = UiState.Loading,

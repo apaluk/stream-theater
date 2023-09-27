@@ -1,10 +1,10 @@
 package com.apaluk.streamtheater.ui.media.media_detail.util
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import com.apaluk.streamtheater.R
-import com.apaluk.streamtheater.core.util.Constants
+import com.apaluk.streamtheater.core.resources.ResourcesManager
+import com.apaluk.streamtheater.core.util.Constants.MEDIA_INFO_SEPARATOR
 import com.apaluk.streamtheater.core.util.commaSeparatedList
 import com.apaluk.streamtheater.core.util.withLeadingZeros
 import com.apaluk.streamtheater.domain.model.media.MediaDetail
@@ -13,6 +13,7 @@ import com.apaluk.streamtheater.domain.model.media.MediaDetailTvShow
 import com.apaluk.streamtheater.domain.model.media.MediaProgress
 import com.apaluk.streamtheater.domain.model.media.TvShowEpisode
 import com.apaluk.streamtheater.domain.model.media.TvShowSeason
+import com.apaluk.streamtheater.domain.use_case.media.util.generalInfoText
 import com.apaluk.streamtheater.ui.common.util.UiState
 import com.apaluk.streamtheater.ui.common.util.stringResourceSafe
 import com.apaluk.streamtheater.ui.media.media_detail.MediaDetailScreenUiState
@@ -22,16 +23,17 @@ import com.apaluk.streamtheater.ui.media.media_detail.StreamsUiState
 import com.apaluk.streamtheater.ui.media.media_detail.TvShowMediaDetailUiState
 import com.apaluk.streamtheater.ui.media.media_detail.tv_show.TvShowPosterData
 
-private const val MEDIA_INFO_SEPARATOR = "  ${Constants.CHAR_BULLET}  "
 
-fun MediaDetail.toMediaDetailUiState(): MediaDetailUiState =
+fun MediaDetail.toMediaDetailUiState(resourcesManager: ResourcesManager): MediaDetailUiState =
     when(this) {
         is MediaDetailMovie -> MovieMediaDetailUiState(movie = this)
-        is MediaDetailTvShow -> TvShowMediaDetailUiState(
-            tvShow = this,
-            posterData = TvShowPosterData(imageUrl = imageUrl),
-            episodesUiState = UiState.Loading   // in this phase we have no episodes yet
-        )
+        is MediaDetailTvShow ->  {
+            TvShowMediaDetailUiState(
+                tvShow = this.copy(infoText = generalInfoText(resourcesManager)),
+                posterData = TvShowPosterData(imageUrl = imageUrl),
+                episodesUiState = UiState.Loading   // in this phase we have no episodes yet
+            )
+        }
     }
 
 fun MediaDetailMovie.generalInfoText(): String {
@@ -90,12 +92,16 @@ fun MediaDetailUiState.toPlayerMediaInfo(): PlayerMediaInfo = when(this) {
 }
 
 fun seasonEpisodeText(season: TvShowSeason?, episode: TvShowEpisode?): String? =
-    if(episode == null)
+    seasonEpisodeText(season?.orderNumber, episode?.orderNumber)
+
+fun seasonEpisodeText(seasonOrderNumber: Int?, episodeOrderNumber: Int?): String? =
+    if(episodeOrderNumber == null)
         null
-    else if(season != null)
-        "S${season.orderNumber.withLeadingZeros(2)}E${episode.orderNumber.withLeadingZeros(2)}"
+    else if(seasonOrderNumber != null)
+        "S${seasonOrderNumber.withLeadingZeros(2)}E${episodeOrderNumber.withLeadingZeros(2)}"
     else
-        "E${episode.orderNumber.withLeadingZeros(2)}"
+        "E${episodeOrderNumber.withLeadingZeros(2)}"
+
 
 @Composable
 @ReadOnlyComposable
@@ -106,26 +112,12 @@ fun TvShowSeason.requireName(): String =
 @ReadOnlyComposable
 fun TvShowMediaDetailUiState.selectedSeasonName(): String? = selectedSeason()?.requireName()
 
-fun TvShowMediaDetailUiState.generalInfoText(context: Context): String {
+
+fun TvShowEpisode.generalInfoText(seasonOrderNumber: Int?): String {
     val info = mutableListOf<String>()
-    val seasonYears = seasons?.map { it.year }?.sortedBy { it?.toInt() ?: 0 }
-    if (seasonYears.isNullOrEmpty().not()) {
-        if(seasonYears?.size == 1) {
-            seasonYears.first()?.let { info.add(it) }
-        }
-        else {
-            info.add("${seasonYears?.first()} ${Constants.CHAR_DASH} ${seasonYears?.last()}")
-        }
-    }
-    else {
-        // no seasons
-        episodes?.getOrNull(0)?.year?.let { info.add(it) }
-    }
-    if (seasons.isNullOrEmpty().not()) {
-        info.add(context.getString(R.string.st_tv_show_count_of_seasons, seasons?.size!!))
-    }
-    tvShow.genre.commaSeparatedList(3)?.let { info.add(it) }
+    seasonEpisodeText(seasonOrderNumber, orderNumber)?.let { info.add(it) }
+    year?.let { info.add(it) }
+    genre.commaSeparatedList(3)?.let { info.add(it) }
     return info.joinToString(separator = MEDIA_INFO_SEPARATOR)
 }
-
 

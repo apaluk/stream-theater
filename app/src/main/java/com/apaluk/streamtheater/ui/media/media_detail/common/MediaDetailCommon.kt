@@ -20,9 +20,9 @@ fun CrewMembers(
     members: List<String>,
     modifier: Modifier = Modifier
 ) {
-    Row {
+    Row(modifier = modifier) {
         Text(
-            modifier = modifier
+            modifier = Modifier
                 .alignByBaseline()
                 .padding(end = 8.dp),
             text = "$role:",
@@ -31,7 +31,7 @@ fun CrewMembers(
             fontWeight = FontWeight.Bold,
         )
         Text(
-            modifier = modifier.alignByBaseline(),
+            modifier = Modifier.alignByBaseline(),
             text = members
                 .take(12)
                 .joinToString(", "),

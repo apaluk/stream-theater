@@ -22,9 +22,11 @@ data class MediaDetailTvShow(
     val title: String,
     val originalTitle: String?,
     val imageUrl: String?,
+    val years: String? = null,
     val genre: List<String>,
     val plot: String?,
     val cast: List<String>,
+    val infoText: String? = null,
     val numSeasons: Int,
     val duration: Int,
     val progress: MediaProgress? = null
@@ -48,7 +50,8 @@ data class TvShowSeason(
 data class TvShowEpisode(
     val id: String,
     val orderNumber: Int,
-    val title: String?,
+    val title: String,
+    val originalTitle: String?,
     val year: String?,
     val directors: List<String>,
     val writer: List<String>,

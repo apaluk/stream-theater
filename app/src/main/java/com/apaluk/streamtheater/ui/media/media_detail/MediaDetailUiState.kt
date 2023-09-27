@@ -33,7 +33,8 @@ data class TvShowMediaDetailUiState(
     val episodes: List<TvShowEpisode>? = null,
     val posterData: TvShowPosterData? = null,
     val previousEpisode: FindNeighbourSeasonEpisodeResult? = null,
-    val nextEpisode: FindNeighbourSeasonEpisodeResult? = null
+    val nextEpisode: FindNeighbourSeasonEpisodeResult? = null,
+    val selectedTab: TvShowMediaDetailsTab = TvShowMediaDetailsTab.Episodes,
 ): MediaDetailUiState()
 
 sealed class MediaDetailAction {
@@ -45,6 +46,7 @@ sealed class MediaDetailAction {
         val neighbourType: SeasonEpisodeNeighbourType,
         val playWhenReady: Boolean
     ): MediaDetailAction()
+    data class SelectContentTab(val tab: TvShowMediaDetailsTab): MediaDetailAction()
 }
 
 data class StreamsUiState(
@@ -61,4 +63,8 @@ data class PlayStreamParams(
 
 sealed class MediaDetailEvent {
     data class PlayStream(val params: PlayStreamParams): MediaDetailEvent()
+}
+
+enum class TvShowMediaDetailsTab(val index: Int) {
+    Episodes(0), EpisodeDetails(1), TvShowDetails(2)
 }
