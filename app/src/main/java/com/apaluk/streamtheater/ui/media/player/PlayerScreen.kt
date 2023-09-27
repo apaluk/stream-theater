@@ -67,7 +67,7 @@ fun PlayerScreen(
             VideoPlayer(
                 uri = Uri.parse(videoUrl),
                 uiState = uiState,
-                seekToPosition = uiState.seekToPosition,
+                seekToPosition = uiState.seekToPositionInSeconds,
                 onPlayerScreenAction = viewModel::onAction,
                 onMediaAction = mediaViewModel::onAction,
                 onNavigateUp = onNavigateUp
@@ -170,10 +170,12 @@ fun VideoPlayer(
         VideoPlayerOverlay(
             uiState = uiState,
             onSkipToPrevious = {
+                onPlayerScreenAction(PlayerScreenAction.VideoProgressChanged(exoPlayer.currentVideoProgress))
                 onMediaAction(MediaAction.SkipToPreviousVideo)
                 onNavigateUp()
             },
             onSkipToNext = {
+                onPlayerScreenAction(PlayerScreenAction.VideoProgressChanged(exoPlayer.currentVideoProgress))
                 onMediaAction(MediaAction.SkipToNextVideo)
                 onNavigateUp()
             },
@@ -185,12 +187,7 @@ fun VideoPlayer(
                 playerState.wasPlayingBeforeOnPause = exoPlayer.isPlaying
                 exoPlayer.pause()
                 onPlayerScreenAction(
-                    PlayerScreenAction.VideoProgressChanged(
-                        VideoProgress(
-                            exoPlayer.currentPosition.millisToSeconds().toInt(),
-                            exoPlayer.duration.millisToSeconds().toInt()
-                        )
-                    )
+                    PlayerScreenAction.VideoProgressChanged(exoPlayer.currentVideoProgress)
                 )
             }
             Lifecycle.Event.ON_RESUME -> {
@@ -320,3 +317,9 @@ fun VideoPlayerOverlayTvShowMediaInfo(
         )
     }
 }
+
+private val ExoPlayer.currentVideoProgress: VideoProgress
+    get() = VideoProgress(
+        currentPosition.millisToSeconds().toInt(),
+        duration.millisToSeconds().toInt()
+    )

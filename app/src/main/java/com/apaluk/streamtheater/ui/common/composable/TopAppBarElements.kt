@@ -51,7 +51,6 @@ fun BackButton(
         onClick = { onClick() }
     ) {
         Icon(
-            modifier = modifier,
             imageVector = Icons.Filled.ArrowBack,
             contentDescription = "Back",
         )

@@ -11,6 +11,7 @@ import okhttp3.ResponseBody
 import org.simpleframework.xml.core.Persister
 import retrofit2.Response
 import timber.log.Timber
+import kotlin.time.Duration
 
 fun <D, R: ResponseDto> webShareRepositoryFlow(
     apiOperation: suspend () -> Response<ResponseBody>,
@@ -87,4 +88,22 @@ inline fun <T, R : Any> Flow<Iterable<T>>.mapList(crossinline transform: suspend
 private suspend fun <T> FlowCollector<Resource<T>>.emitError(message: String) {
     Timber.w(message)
     emit(Resource.Error(message = message))
+}
+
+fun <T> Flow<T>.throttleFirst(windowDuration: Duration): Flow<T> = flow {
+    var windowStartTime = System.currentTimeMillis()
+    var emitted = false
+    val durationMillis = windowDuration.inWholeMilliseconds
+    collect { value ->
+        val currentTime = System.currentTimeMillis()
+        val delta = currentTime - windowStartTime
+        if (delta >= durationMillis) {
+            windowStartTime += delta / durationMillis * durationMillis
+            emitted = false
+        }
+        if (!emitted) {
+            emit(value)
+            emitted = true
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.apaluk.streamtheater.ui.media.player
 
 import androidx.lifecycle.viewModelScope
+import com.apaluk.streamtheater.core.util.throttleFirst
 import com.apaluk.streamtheater.domain.use_case.media.GetStartFromPositionUseCase
 import com.apaluk.streamtheater.domain.use_case.media.UpdateWatchHistoryOnVideoProgressUseCase
 import com.apaluk.streamtheater.domain.use_case.webshare.GetFileLinkUseCase
@@ -10,12 +11,10 @@ import com.apaluk.streamtheater.ui.common.viewmodel.BaseViewModel
 import com.apaluk.streamtheater.ui.media.media_detail.PlayStreamParams
 import com.apaluk.streamtheater.ui.media.media_detail.util.PlayerMediaInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
@@ -36,9 +35,8 @@ class PlayerViewModel @Inject constructor(
 
     private val playStreamParams = MutableStateFlow<PlayStreamParams?>(null)
 
-    @OptIn(FlowPreview::class)
     private val currentVideoProgress = MutableSharedFlow<VideoProgress>().apply {
-        debounce(500.milliseconds)
+        throttleFirst(500.milliseconds)
             .onEach { videoProgress ->
                 playStreamParams.value?.watchHistoryId?.let {
                     updateWatchHistoryOnVideoProgress(it, videoProgress.progress, videoProgress.totalDuration)
@@ -61,9 +59,9 @@ class PlayerViewModel @Inject constructor(
                         )
                     }
                 }.collect()
-                // seek video to last watched position
-                val startFromPosition = getStartFromPosition(params.watchHistoryId).toLong()
-                emitUiState { it.copy(seekToPosition = startFromPosition) }
+                // seek video to last watched position, move back 4 seconds
+                val startFromPosition = getStartFromPosition(params.watchHistoryId).toLong() - 4L
+                emitUiState { it.copy(seekToPositionInSeconds = startFromPosition.coerceAtLeast(0L)) }
             }
         }
     }
@@ -110,7 +108,7 @@ data class PlayerScreenUiState(
     val videoUrl: String? = null,
     val showNextPrevButtons: Boolean = false,
     val playerMediaInfo: PlayerMediaInfo? = null,
-    val seekToPosition: Long? = null,
+    val seekToPositionInSeconds: Long? = null,
 )
 
 sealed class PlayerScreenAction {
