@@ -43,9 +43,9 @@ class GetStreamsUiStateUseCase @Inject constructor(
         if(lastWatchedStream != null) {
             emit(
                 StreamsUiState(
-                streams = streams,
-                selectedStreamId = watchHistoryRepository.getStreamIdent(lastWatchedStream.streamId)
-            )
+                    streams = streams,
+                    selectedStreamId = watchHistoryRepository.getStreamIdent(lastWatchedStream.streamId)
+                )
             )
         } else {
             // if no last watched stream, try auto select stream
