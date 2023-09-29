@@ -106,7 +106,7 @@ class LoginManagerImpl(
                 is Resource.Error -> {
                     Timber.w("Failed to update WebShare token!")
                 }
-                is Resource.Loading -> {}   // ignore
+                else -> {}   // ignore
             }
         }
     }

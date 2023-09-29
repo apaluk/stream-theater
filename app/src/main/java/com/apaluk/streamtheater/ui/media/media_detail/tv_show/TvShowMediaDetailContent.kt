@@ -1,3 +1,5 @@
+@file:Suppress("CrossfadeLabel")
+
 package com.apaluk.streamtheater.ui.media.media_detail.tv_show
 
 import androidx.compose.animation.Crossfade
@@ -171,10 +173,7 @@ private fun TvShowMediaDetailsContentTabs(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Crossfade(
-            targetState = tvShowMediaDetailUiState.selectedTab,
-            label = "TV show media detail tab"
-        ) { selectedTab ->
+        Crossfade(targetState = tvShowMediaDetailUiState.selectedTab) { selectedTab ->
             when (selectedTab) {
                 TvShowMediaDetailsTab.Episodes ->
                     MediaDetailTvShowEpisodesList(
@@ -191,10 +190,7 @@ private fun TvShowMediaDetailsContentTabs(
                         val seasonOrderNumber = remember(tvShowMediaDetailUiState.selectedSeasonIndex, tvShowMediaDetailUiState.seasons) {
                             tvShowMediaDetailUiState.selectedSeason()?.orderNumber
                         }
-                        Crossfade(
-                            targetState = episode,
-                            label = "TV show episode details"
-                        ) {
+                        Crossfade(targetState = episode) {
                             TvShowEpisodeDetails(episode = it, seasonOrderNumber = seasonOrderNumber)
                         }
                     }

@@ -15,7 +15,7 @@ data class SourceDto(
     @Json(name = "children_count")
     val childrenCount: Int,
     @Json(name = "collections")
-    val collections: List<CollectionDto>,
+    val collections: List<CollectionDto>?,
     @Json(name = "i18n_info_labels")
     val i18nInfoLabels: List<I18nInfoLabelDto>,
     @Json(name = "info_labels")
@@ -27,7 +27,7 @@ data class SourceDto(
     @Json(name = "last_children_date_added")
     val lastChildrenDateAdded: List<LastChildrenDateAddedDto?>?,
     @Json(name = "networks")
-    val networks: List<String>,
+    val networks: List<String>?,
     @Json(name = "original_language")
     val originalLanguage: String?,
     @Json(name = "play_count")
@@ -37,13 +37,13 @@ data class SourceDto(
     @Json(name = "premieres")
     val premieres: List<PremiereDto>?,
     @Json(name = "ratings")
-    val ratings: RatingsDto,
+    val ratings: RatingsDto?,
     @Json(name = "revenue")
     val revenue: Long?,
     @Json(name = "root_parent")
     val rootParent: Any?,
     @Json(name = "services")
-    val services: ServicesDto,
+    val services: ServicesDto?,
     @Json(name = "stream_info")
     val streamInfo: StreamInfoDto?,
     @Json(name = "tags")

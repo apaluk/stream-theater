@@ -1,3 +1,5 @@
+@file:Suppress("CrossfadeLabel")
+
 package com.apaluk.streamtheater.ui.media.media_detail.common
 
 import androidx.annotation.DrawableRes
@@ -63,8 +65,7 @@ fun MediaDetailPoster(
             if (imageUrl != null) {
                 Crossfade(
                     targetState = imageUrl,
-                    animationSpec = tween(Constants.VERY_LONG_ANIM_DURATION),
-                    label = "Crossfade in MediaDetailPoster"
+                    animationSpec = tween(Constants.VERY_LONG_ANIM_DURATION)
                 ) { url ->
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
