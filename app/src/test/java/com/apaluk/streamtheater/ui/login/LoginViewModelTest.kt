@@ -1,32 +1,45 @@
 package com.apaluk.streamtheater.ui.login
 
+import app.cash.turbine.test
 import com.apaluk.streamtheater.core.login.LoginManager
-import com.apaluk.streamtheater.core.testing.LoginManagerFake
-import com.apaluk.streamtheater.core.testing.ResourcesManagerDummy
 import com.apaluk.streamtheater.core.util.MainDispatcherRule
+import com.apaluk.streamtheater.core.util.Resource
+import com.apaluk.streamtheater.core.util.mockkResourcesManager
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.mockk.Called
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class LoginViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val loginManager: LoginManager = LoginManagerFake()
+    @MockK(relaxed = true)
+    private lateinit var loginManager: LoginManager
+
+    private val loginStateFlow = MutableStateFlow(LoginManager.LoginState.LoggedOut)
+
     private lateinit var viewModel: LoginViewModel
 
     @Before
     fun setUp() {
-        viewModel = LoginViewModel(loginManager, ResourcesManagerDummy())
+        MockKAnnotations.init(this)
+        coEvery { loginManager.tryLogin(any(), any()) } returns Resource.Success(Unit)
+        every { loginManager.loginState } returns loginStateFlow
     }
 
     @Test
-    fun `setting username and password updates ui state`() = runTest {
+    fun `setting username and password, updates username and password`() = runTest {
+        createViewModel()
         assertThat(viewModel.uiState.value.userName).isEmpty()
         assertThat(viewModel.uiState.value.password).isEmpty()
         viewModel.onAction(LoginAction.UpdateUsername("user"))
@@ -35,31 +48,33 @@ class LoginViewModelTest {
         assertThat(viewModel.uiState.value.password).isEqualTo("pass")
     }
 
-
-    // TODO
     @Test
-    fun `successful login sets loggedIn flag`() = runTest {
-//        assertThat(viewModel.uiState.value.loggedIn).isFalse()
-//        viewModel.onAction(LoginAction.UpdateUsername("user"))
-//        viewModel.onAction(LoginAction.UpdatePassword("pass"))
-//        viewModel.onAction(LoginAction.LoginButtonClicked)
-//        advanceUntilIdle()
-//        assertThat(viewModel.uiState.value.loggedIn).isTrue()
-//        assertThat(viewModel.uiState.value.errorMessage).isNull()
-//        viewModel.onAction(LoginAction.OnLoggedIn)
-//        assertThat(viewModel.uiState.value.loggedIn).isFalse()
+    fun `given empty name and password, when clicking login button, login is not triggered and error message is set`() = runTest {
+        createViewModel()
+        viewModel.onAction(LoginAction.LoginButtonClicked)
+        coVerify { loginManager.tryLogin(any(), any()) wasNot Called }
+        assertThat(viewModel.uiState.value.errorMessage).isNotEmpty()
     }
 
-    // TODO
     @Test
-    fun `unsuccessful login sets error message`() = runTest {
-//        assertThat(viewModel.uiState.value.loggedIn).isFalse()
-//        assertThat(viewModel.uiState.value.errorMessage).isNull()
-//        viewModel.onAction(LoginAction.UpdateUsername("wrong"))
-//        viewModel.onAction(LoginAction.UpdatePassword("pass"))
-//        viewModel.onAction(LoginAction.LoginButtonClicked)
-//        advanceUntilIdle()
-//        assertThat(viewModel.uiState.value.loggedIn).isFalse()
-//        assertThat(viewModel.uiState.value.errorMessage).isNotEmpty()
+    fun `given username and password, when clicking login button, login is triggered`() = runTest {
+        createViewModel()
+        viewModel.onAction(LoginAction.UpdateUsername("user"))
+        viewModel.onAction(LoginAction.UpdatePassword("pass"))
+        viewModel.onAction(LoginAction.LoginButtonClicked)
+        coVerify { loginManager.tryLogin(any(), any()) }
+    }
+
+    @Test
+    fun `when loginState changed to LoggedIn, redirect to dashboard`() = runTest {
+        createViewModel()
+        loginStateFlow.value = LoginManager.LoginState.LoggedIn
+        viewModel.event.test {
+            assertThat(awaitItem()).isEqualTo(LoginEvent.NavigateToDashboard)
+        }
+    }
+
+    private fun createViewModel() {
+        viewModel = LoginViewModel(loginManager, mockkResourcesManager())
     }
 }

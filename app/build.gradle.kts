@@ -100,6 +100,7 @@ dependencies {
     testImplementation(Dependencies.Test.hilt)
     testImplementation(Dependencies.Test.truth)
     testImplementation(Dependencies.Test.coroutines)
+    testImplementation(Dependencies.Test.turbine)
     androidTestImplementation(Dependencies.AndroidTest.jUnitExt)
     androidTestImplementation(Dependencies.AndroidTest.espresso)
     androidTestImplementation(Dependencies.AndroidTest.composeUiTest)

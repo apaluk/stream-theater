@@ -119,12 +119,12 @@ private fun SearchScreenContent(
                 uiState = uiState.uiState,
                 empty = { DefaultEmptyState(text = stringResourceSafe(id = R.string.st_search_empty_results))},
                 idle = {
-                    uiState.suggestions?.let { searchSuggestions ->
+                    if (uiState.suggestions.isNotEmpty()) {
                         SearchHistoryList(
                             modifier = Modifier
                                 .padding(paddingValues)
                                 .fillMaxSize(),
-                            searchHistoryList = searchSuggestions,
+                            searchHistoryList = uiState.suggestions,
                             onItemSelected = { text -> onSearchScreenAction(
                                 SearchScreenAction.SearchTextChanged(TextFieldValue(text, TextRange(text.length)))
                             ) },

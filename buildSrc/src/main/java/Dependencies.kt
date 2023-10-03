@@ -26,6 +26,7 @@ object Dependencies {
         const val hilt = "com.google.dagger:hilt-android-testing:${Versions.hilt}"
         const val truth = "com.google.truth:truth:${Versions.truth}"
         const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.coroutinesTest}"
+        const val turbine = "app.cash.turbine:turbine:${Versions.turbine}"
     }
 
     object AndroidTest {
