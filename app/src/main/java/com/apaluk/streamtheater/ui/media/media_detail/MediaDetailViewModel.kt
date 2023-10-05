@@ -138,8 +138,9 @@ class MediaDetailViewModel @Inject constructor(
 
     private fun onSelectEpisodeIndex(action: MediaDetailAction.SelectEpisodeIndex) {
         if(action.episodeIndex != uiState.value.tvShowUiState?.selectedEpisodeIndex) {
-            emitUiState { it.copy(streamsUiState = null) }
-            updateTvShowUiState { it.copy(selectedEpisodeIndex = action.episodeIndex) }
+            updateTvShowUiState({ it.copy(streamsUiState = null) }) {
+                it.copy(selectedEpisodeIndex = action.episodeIndex)
+            }
         }
     }
 
@@ -210,9 +211,14 @@ class MediaDetailViewModel @Inject constructor(
         updateTvShowUiState { it.copy(selectedTab = action.tab) }
     }
 
-    private fun updateTvShowUiState(newUiStateProducer: (TvShowMediaDetailUiState) -> TvShowMediaDetailUiState) {
+    private fun updateTvShowUiState(
+        screenUiStateProducer: (MediaDetailScreenUiState) -> MediaDetailScreenUiState = { it },
+        mediaUiStateProducer: (TvShowMediaDetailUiState) -> TvShowMediaDetailUiState
+    ) {
         val tvShowUiState = uiState.value.tvShowUiState ?: return
-        emitUiState { it.copy(mediaDetailUiState = newUiStateProducer(tvShowUiState)) }
+        val newMediaDetailUiState = mediaUiStateProducer(tvShowUiState)
+        val newScreenUiState = screenUiStateProducer(uiState.value).copy(mediaDetailUiState = newMediaDetailUiState)
+        emitUiState(newScreenUiState)
     }
 
     private fun updateMediaDetailUiStateContinuously() {

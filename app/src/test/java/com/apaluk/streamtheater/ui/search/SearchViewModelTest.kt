@@ -84,7 +84,7 @@ class SearchViewModelTest {
     }
 
     @Test
-    fun `editing search query update search button enabled state`() = runTest {
+    fun `when editing search query, search button enabled state is updated`() = runTest {
         viewModel.uiState.test {
             assertThat(awaitItem().searchButtonEnabled).isFalse()
             viewModel.onAction(SearchScreenAction.SearchTextChanged(TextFieldValue("1")))

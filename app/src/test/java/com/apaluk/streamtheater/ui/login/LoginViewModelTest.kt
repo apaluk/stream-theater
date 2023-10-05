@@ -6,7 +6,6 @@ import com.apaluk.streamtheater.core.util.MainDispatcherRule
 import com.apaluk.streamtheater.core.util.Resource
 import com.apaluk.streamtheater.core.util.mockkResourcesManager
 import com.google.common.truth.Truth.assertThat
-import io.mockk.Called
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -52,7 +51,7 @@ class LoginViewModelTest {
     fun `given empty name and password, when clicking login button, login is not triggered and error message is set`() = runTest {
         createViewModel()
         viewModel.onAction(LoginAction.LoginButtonClicked)
-        coVerify { loginManager.tryLogin(any(), any()) wasNot Called }
+        coVerify(exactly = 0) { loginManager.tryLogin(any(), any()) }
         assertThat(viewModel.uiState.value.errorMessage).isNotEmpty()
     }
 

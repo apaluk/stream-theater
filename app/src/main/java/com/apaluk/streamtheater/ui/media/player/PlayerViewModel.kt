@@ -1,6 +1,7 @@
 package com.apaluk.streamtheater.ui.media.player
 
 import androidx.lifecycle.viewModelScope
+import com.apaluk.streamtheater.core.util.Resource
 import com.apaluk.streamtheater.core.util.throttleFirst
 import com.apaluk.streamtheater.domain.use_case.media.GetStartFromPositionUseCase
 import com.apaluk.streamtheater.domain.use_case.media.UpdateWatchHistoryOnVideoProgressUseCase
@@ -48,20 +49,20 @@ class PlayerViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             playStreamParams.filterNotNull().collectLatest { params ->
-                emitUiState { it.copy(playerMediaInfo = params.mediaInfo) }
-
-                // get video file link
                 getFileLink(params.ident).map { resource ->
+                    val startFromPosition =
+                        if (resource is Resource.Success)
+                            getStartFromPosition(params.watchHistoryId).toLong() - 4L
+                        else 0L
                     emitUiState {
                         it.copy(
                             uiState = resource.toUiState(),
                             videoUrl = resource.data,
+                            playerMediaInfo = params.mediaInfo,
+                            seekToPositionInSeconds = startFromPosition.coerceAtLeast(0L)
                         )
                     }
                 }.collect()
-                // seek video to last watched position, move back 4 seconds
-                val startFromPosition = getStartFromPosition(params.watchHistoryId).toLong() - 4L
-                emitUiState { it.copy(seekToPositionInSeconds = startFromPosition.coerceAtLeast(0L)) }
             }
         }
     }
