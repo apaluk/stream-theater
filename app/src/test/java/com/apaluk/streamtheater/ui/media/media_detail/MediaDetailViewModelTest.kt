@@ -102,7 +102,7 @@ class MediaDetailViewModelTest {
     }
 
     @Test
-    fun `given tv show media detail, when started, episodes with watch history are fetched and emitted`() = runTest {
+    fun `given tv show media detail, when started, episodes with watch history are emitted`() = runTest {
         val tvShowUiState = TvShowMediaDetailUiState(
             tvShow = tvShowMediaDetail,
             seasons = listOf(createSeason(0), createSeason(1)),
