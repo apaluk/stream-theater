@@ -13,7 +13,7 @@ class UpdateWatchHistoryOnVideoProgressUseCase @Inject constructor(
     ) {
         val timeToEndSeconds = totalDurationSeconds - progressSeconds
         val relativeProgress = progressSeconds.toFloat() / totalDurationSeconds.toFloat()
-        val isWatched = (timeToEndSeconds < 90 && relativeProgress > 0.9f) || relativeProgress > 0.96f
+        val isWatched = (timeToEndSeconds < 90 && relativeProgress > 0.9f) || relativeProgress > 0.95f
         watchHistoryRepository.updateWatchHistoryProgress(
             watchHistoryId, progressSeconds, isWatched
         )

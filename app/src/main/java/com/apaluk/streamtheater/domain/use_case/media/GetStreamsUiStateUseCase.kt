@@ -6,6 +6,7 @@ import com.apaluk.streamtheater.domain.repository.WatchHistoryRepository
 import com.apaluk.streamtheater.ui.media.media_detail.StreamsUiState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import javax.inject.Inject
 
-class GetStreamsUiStateUseCase @Inject constructor(
+class   GetStreamsUiStateUseCase @Inject constructor(
     private val streamCinemaRepository: StreamCinemaRepository,
     private val watchHistoryRepository: WatchHistoryRepository,
     private val autoSelectStream: AutoSelectStreamUseCase
@@ -61,6 +62,7 @@ class GetStreamsUiStateUseCase @Inject constructor(
         // continue emitting watch history updates
         emitAll(
             watchHistoryFlow
+                .drop(1)
                 .mapNotNull { it.firstOrNull()?.streamId }
                 .distinctUntilChanged()
                 .map { streamId ->

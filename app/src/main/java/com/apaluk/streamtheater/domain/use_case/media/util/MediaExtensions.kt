@@ -15,7 +15,9 @@ fun List<TvShowSeason>.getYears(): String? {
             this.first().year
         } else {
             val sortedYears = this.mapNotNull { it.year }.sorted()
-            "${sortedYears.first()} - ${sortedYears.last()}"
+            val first = sortedYears.first()
+            val last = sortedYears.last()
+            if (first == last) first else "$first - $last"
         }
     }
 }

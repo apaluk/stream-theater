@@ -92,21 +92,19 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 uiState.map { it.uiState }.distinctUntilChanged(),
-                uiState.map { it.searchFieldValue }.distinctUntilChanged()
+                uiState.map { it.searchFieldValue.text }.distinctUntilChanged()
             ) { uiState, searchText ->
                 if (uiState == UiState.Idle) searchText else null
-            }.flatMapLatest { searchText ->
-                if (searchText != null) {
-                    searchHistoryRepository
-                        .getFilteredHistory(searchText.text)
-                        .map { list ->
-                            list.map { it.text }
-                        }
-
-                } else flowOf(null)
-            }.collectLatest { suggestions ->
-                emitUiState { it.copy(suggestions = suggestions) }
             }
+                .distinctUntilChanged()
+                .flatMapLatest { searchText ->
+                    if (searchText != null) {
+                        searchHistoryRepository.getFilteredHistory(searchText)
+                            .map { list -> list.map { it.text } }
+                    } else flowOf(emptyList())
+                }.collectLatest { suggestions ->
+                    emitUiState { it.copy(suggestions = suggestions) }
+                }
         }
     }
 
@@ -117,9 +115,11 @@ class SearchViewModel @Inject constructor(
                 searchJob
             ) { searchText, searchJob ->
                 searchText.isNotBlank() && searchJob == null
-            }.collect { searchButtonEnabled ->
-                emitUiState { it.copy(searchButtonEnabled = searchButtonEnabled) }
             }
+                .distinctUntilChanged()
+                .collect { searchButtonEnabled ->
+                    emitUiState { it.copy(searchButtonEnabled = searchButtonEnabled) }
+                }
         }
     }
 
@@ -129,7 +129,7 @@ data class SearchUiState(
     val uiState: UiState = UiState.Idle,
     val searchFieldValue: TextFieldValue = TextFieldValue(),
     val results: List<SearchResultItem> = emptyList(),
-    val suggestions: List<String>? = null,
+    val suggestions: List<String> = emptyList(),
     val searchButtonEnabled: Boolean = false
 )
 
